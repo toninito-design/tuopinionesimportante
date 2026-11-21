@@ -7,7 +7,7 @@
 <style>
 :root{font:16px/1.45 system-ui,sans-serif;color:#18304b;background:#edf3f7;--paper:#fff;--line:#cfdae5;--muted:#4d6479;--main:#075c64}
 *{box-sizing:border-box}body{margin:0}main{max-width:1040px;margin:auto;padding:clamp(15px,4vw,42px)}header{margin-bottom:20px}h1{font-size:clamp(1.75rem,4vw,2.7rem);letter-spacing:-.045em;margin:3px 0}h2{margin:0 0 12px;font-size:1.35rem}p{margin:.4rem 0 .85rem}small,.muted{color:var(--muted)}nav,.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}nav{margin-bottom:16px}section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:clamp(14px,3vw,25px);margin-bottom:14px}
-input,select,button{font:inherit;padding:8px 10px;border:1px solid #aabbc9;border-radius:8px;background:white;color:#18304b;max-width:100%}button{cursor:pointer}button:disabled{opacity:.55;cursor:default}button.active,.action{background:var(--main);color:white;border-color:var(--main)}label{display:grid;gap:4px;font-size:.9rem;min-width:0}label.wide{flex:1;min-width:min(100%,240px)}label.wide select{width:100%}[hidden]{display:none!important}#status{color:var(--muted);margin-bottom:12px}#status.error{color:#9b271f}.mapping{max-height:390px;overflow:auto;margin:12px 0}.mapping label{margin:7px 0}.mapping input{width:100%}ul{padding-left:1.25rem}.legend{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.legend span{display:inline-flex;gap:5px;align-items:center}.swatch{width:12px;height:12px;border-radius:3px}.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:17px}.plot{min-width:0}.bars{display:flex;align-items:end;justify-content:center;gap:4px;height:110px;margin:6px 0;border-bottom:1px solid #6e879a;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#dce6ed calc(25% - 1px),#dce6ed 25%)}.bar{flex:1;max-width:36px}.plot p{font-size:.9rem}.band{height:12px;background:#e8eef4;border-radius:8px;overflow:hidden;margin:6px 0}.band div{height:100%;background:var(--main)}summary{cursor:pointer;margin:8px 0}.trend{width:100%;height:auto;display:block}.trend text{fill:#18304b;font:13px system-ui}.trend .grid{stroke:#cbd8e3;stroke-width:1}.trend circle{stroke:white;stroke-width:1}.level-scroll{overflow:auto;margin:0 0 16px}.level-chart{display:grid;grid-template-columns:repeat(var(--level-count),minmax(75px,1fr));min-width:calc(var(--level-count)*80px);gap:5px;text-align:center}.level-chart .bars{height:175px}
+input,select,button{font:inherit;padding:8px 10px;border:1px solid #aabbc9;border-radius:8px;background:white;color:#18304b;max-width:100%}button{cursor:pointer}button:disabled{opacity:.55;cursor:default}button.active,.action{background:var(--main);color:white;border-color:var(--main)}label{display:grid;gap:4px;font-size:.9rem;min-width:0}label.wide{flex:1;min-width:min(100%,240px)}label.wide select{width:100%}[hidden]{display:none!important}#status{color:var(--muted);margin-bottom:12px}#status.error{color:#9b271f}.mapping{max-height:390px;overflow:auto;margin:12px 0}.mapping label{margin:7px 0}.mapping input{width:100%}ul{padding-left:1.25rem}.legend{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.legend span{display:inline-flex;gap:5px;align-items:center}.swatch{width:12px;height:12px;border-radius:3px}.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:17px}.plot{min-width:0}.bars{display:flex;align-items:end;justify-content:center;gap:4px;height:110px;margin:6px 0;border-bottom:1px solid #6e879a;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#dce6ed calc(25% - 1px),#dce6ed 25%)}.bar{flex:1;max-width:36px}.plot p{font-size:.9rem}.band{height:12px;background:#e8eef4;border-radius:8px;overflow:hidden;margin:6px 0}.band div{height:100%;background:var(--main)}summary{cursor:pointer;margin:8px 0}.trend{width:100%;height:auto;display:block}.trend text{fill:#18304b;font:13px system-ui}.trend .grid{stroke:#cbd8e3;stroke-width:1}.trend circle{stroke:white;stroke-width:1}.level-scroll{overflow:auto;margin:0 0 16px}.level-chart{display:grid;grid-template-columns:repeat(var(--level-count),minmax(75px,1fr));min-width:calc(var(--level-count)*80px);gap:5px;text-align:center}.level-chart .bars{height:175px}.overview-reading{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}.overview-reading h3{margin:0 0 12px}.overview-reading h4{margin:14px 0 4px}.overview-reading p{margin:4px 0 8px}
 </style>
 <main>
 <header><small>ENCUESTA DEL ALUMNADO</small><h1>Tu opinión es importante</h1><p class="muted">Histórico de Microsoft Forms y análisis para la formación docente</p></header>
@@ -423,6 +423,55 @@ function overview(data,fields) {
     return [label,{counts,skip}];
   });
 }
+function overviewReading(series, question, categories) {
+  const rating = categories.length > 0 && categories.every(answer=>ordinal.includes(answer));
+  const wording = norm(question);
+  const favorable = /claro y util|resolviendo dudas|resuelve dudas|planificacion de tareas|planifican las tareas|participacion oral|me ayudan|me resulta util|me he sentido atendid|son interesantes/.test(wording);
+  const percent = (count,total)=>fmt.format(100*count/total)+' % ('+count+' de '+total+')';
+  const center = series[0][1];
+  const centerSize = validCount(center);
+  const highCount = result=>(result.counts.get('Bastante')||0)+(result.counts.get('Mucho')||0);
+  const stages = new Set(['Primaria','ESO','Bachillerato','Otras etapas']);
+  return series.filter(([label],index)=>index===0 || stages.has(label)).map(([label,result],index)=>{
+    const size=validCount(result);
+    if (!size) return {label,lines:['Sin respuestas válidas para esta selección.']};
+    const lines=[];
+    if (rating) {
+      const high=highCount(result);
+      const low=size-high;
+      if (favorable) {
+        lines.push((high>size/2?'Fortaleza observada. ':'Valoraciones altas. ')+percent(high,size)+' respondió «Bastante» o «Mucho».');
+        if (low) lines.push('Área de mejora. '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco». Conviene revisar qué dificultades pueden explicar estas respuestas.');
+      } else {
+        lines.push(percent(high,size)+' respondió «Bastante» o «Mucho» y '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco».');
+        lines.push(wording.includes('qustodio')
+          ? 'Aspecto a revisar. Comprueba si la frecuencia de uso coincide con las pautas del centro para este ámbito.'
+          : 'Aspecto a revisar. Contrasta esta distribución con el objetivo de la pregunta antes de interpretar un resultado alto o bajo como fortaleza o área de mejora.');
+      }
+      if (index && centerSize) {
+        const delta=100*(high/size-highCount(center)/centerSize);
+        if (Math.abs(delta)>=0.1) lines.push('Las respuestas «Bastante» o «Mucho» están '+fmt.format(Math.abs(delta))+' puntos porcentuales '+(delta>0?'por encima':'por debajo')+' del total del centro.');
+      }
+    } else {
+      const top=Math.max(...result.counts.values());
+      const answers=[...result.counts].filter(([,count])=>count===top).map(([answer])=>'«'+answer+'»');
+      lines.push((answers.length===1?'La opción más elegida fue ':'Las opciones más elegidas fueron ')+answers.join(', ')+' con '+percent(top,size)+(answers.length>1?' cada una.':'.'));
+      lines.push('La pregunta recoge una distribución de respuestas. Para identificar un área de mejora, compárala con el objetivo del centro para esta pregunta.');
+    }
+    if (size<10) lines.push('Hay pocas respuestas válidas. Interpreta el resultado con cautela.');
+    return {label,lines};
+  });
+}
+function renderOverviewReading(reading) {
+  const summary = node('div',undefined,'overview-reading');
+  summary.append(node('h3','Análisis del centro y las etapas'));
+  for (const {label,lines} of reading) {
+    const item=node('article');
+    item.append(node('h4',label),...lines.map(line=>node('p',line)));
+    summary.append(item);
+  }
+  return summary;
+}
 async function chartData(data,field) {
   const level = $('level').value, group = $('group').value, view = $('view').value;
   const filter = row=>matches(row,level,group);
@@ -464,7 +513,8 @@ function display(series,field,teacherMode) {
     $('group').parentElement.hidden ? '' : ($('group').value ? 'Grupo '+$('group').value : 'Todos los grupos')
   ].filter(Boolean);
   const note = pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '';
-  report = {series,field,categories,context,teacherMode,isOverview,note};
+  const reading = isOverview ? overviewReading(series,field.q,categories) : [];
+  report = {series,field,categories,context,teacherMode,isOverview,note,reading};
   $('pdf').disabled = false;
   charts.append(node('p',context.join(' · '),'muted'));
   if (note) charts.append(node('p',note,'muted'));
@@ -534,6 +584,7 @@ function display(series,field,teacherMode) {
     plots.append(plot);
   }
   charts.append(plots);
+  if (reading.length) charts.append(renderOverviewReading(reading));
 }
 async function update(changed) {
   const version = ++renderCount;
@@ -655,7 +706,7 @@ refresh().catch(error=>status(error.message,true));
 function downloadReport() {
   if (!report) return;
   if(report.trend) return downloadTrend(report.trend);
-  const {series,field,categories,context,teacherMode,isOverview,note} = report;
+  const {series,field,categories,context,teacherMode,isOverview,note,reading=[]} = report;
   const doc = new window.jspdf.jsPDF();
   const margin = 16;
   let y = 18;
@@ -732,6 +783,16 @@ function downloadReport() {
     });
     if (teacherMode && name!=='Sin docente identificado' && categories.every(label=>ordinal.includes(label))) {
       write('Bastante + Mucho · '+fmt.format(((counts.get('Bastante')||0)+(counts.get('Mucho')||0))/n*100)+' %');
+    }
+  }
+  if (reading.length) {
+    room(25);
+    y+=5;
+    write('Análisis del centro y las etapas',13,true);
+    for (const {label,lines} of reading) {
+      room(18);
+      write(label,11,true);
+      for (const line of lines) write(line);
     }
   }
   doc.save('encuesta-'+(teacherMode?'profesorado':'resultados')+'.pdf');

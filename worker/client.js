@@ -260,6 +260,55 @@ function overview(data,fields) {
     return [label,{counts,skip}];
   });
 }
+function overviewReading(series, question, categories) {
+  const rating = categories.length > 0 && categories.every(answer=>ordinal.includes(answer));
+  const wording = norm(question);
+  const favorable = /claro y util|resolviendo dudas|resuelve dudas|planificacion de tareas|planifican las tareas|participacion oral|me ayudan|me resulta util|me he sentido atendid|son interesantes/.test(wording);
+  const percent = (count,total)=>fmt.format(100*count/total)+' % ('+count+' de '+total+')';
+  const center = series[0][1];
+  const centerSize = validCount(center);
+  const highCount = result=>(result.counts.get('Bastante')||0)+(result.counts.get('Mucho')||0);
+  const stages = new Set(['Primaria','ESO','Bachillerato','Otras etapas']);
+  return series.filter(([label],index)=>index===0 || stages.has(label)).map(([label,result],index)=>{
+    const size=validCount(result);
+    if (!size) return {label,lines:['Sin respuestas válidas para esta selección.']};
+    const lines=[];
+    if (rating) {
+      const high=highCount(result);
+      const low=size-high;
+      if (favorable) {
+        lines.push((high>size/2?'Fortaleza observada. ':'Valoraciones altas. ')+percent(high,size)+' respondió «Bastante» o «Mucho».');
+        if (low) lines.push('Área de mejora. '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco». Conviene revisar qué dificultades pueden explicar estas respuestas.');
+      } else {
+        lines.push(percent(high,size)+' respondió «Bastante» o «Mucho» y '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco».');
+        lines.push(wording.includes('qustodio')
+          ? 'Aspecto a revisar. Comprueba si la frecuencia de uso coincide con las pautas del centro para este ámbito.'
+          : 'Aspecto a revisar. Contrasta esta distribución con el objetivo de la pregunta antes de interpretar un resultado alto o bajo como fortaleza o área de mejora.');
+      }
+      if (index && centerSize) {
+        const delta=100*(high/size-highCount(center)/centerSize);
+        if (Math.abs(delta)>=0.1) lines.push('Las respuestas «Bastante» o «Mucho» están '+fmt.format(Math.abs(delta))+' puntos porcentuales '+(delta>0?'por encima':'por debajo')+' del total del centro.');
+      }
+    } else {
+      const top=Math.max(...result.counts.values());
+      const answers=[...result.counts].filter(([,count])=>count===top).map(([answer])=>'«'+answer+'»');
+      lines.push((answers.length===1?'La opción más elegida fue ':'Las opciones más elegidas fueron ')+answers.join(', ')+' con '+percent(top,size)+(answers.length>1?' cada una.':'.'));
+      lines.push('La pregunta recoge una distribución de respuestas. Para identificar un área de mejora, compárala con el objetivo del centro para esta pregunta.');
+    }
+    if (size<10) lines.push('Hay pocas respuestas válidas. Interpreta el resultado con cautela.');
+    return {label,lines};
+  });
+}
+function renderOverviewReading(reading) {
+  const summary = node('div',undefined,'overview-reading');
+  summary.append(node('h3','Análisis del centro y las etapas'));
+  for (const {label,lines} of reading) {
+    const item=node('article');
+    item.append(node('h4',label),...lines.map(line=>node('p',line)));
+    summary.append(item);
+  }
+  return summary;
+}
 async function chartData(data,field) {
   const level = $('level').value, group = $('group').value, view = $('view').value;
   const filter = row=>matches(row,level,group);
@@ -301,7 +350,8 @@ function display(series,field,teacherMode) {
     $('group').parentElement.hidden ? '' : ($('group').value ? 'Grupo '+$('group').value : 'Todos los grupos')
   ].filter(Boolean);
   const note = pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '';
-  report = {series,field,categories,context,teacherMode,isOverview,note};
+  const reading = isOverview ? overviewReading(series,field.q,categories) : [];
+  report = {series,field,categories,context,teacherMode,isOverview,note,reading};
   $('pdf').disabled = false;
   charts.append(node('p',context.join(' · '),'muted'));
   if (note) charts.append(node('p',note,'muted'));
@@ -371,6 +421,7 @@ function display(series,field,teacherMode) {
     plots.append(plot);
   }
   charts.append(plots);
+  if (reading.length) charts.append(renderOverviewReading(reading));
 }
 async function update(changed) {
   const version = ++renderCount;
@@ -492,7 +543,7 @@ refresh().catch(error=>status(error.message,true));
 function downloadReport() {
   if (!report) return;
   if(report.trend) return downloadTrend(report.trend);
-  const {series,field,categories,context,teacherMode,isOverview,note} = report;
+  const {series,field,categories,context,teacherMode,isOverview,note,reading=[]} = report;
   const doc = new window.jspdf.jsPDF();
   const margin = 16;
   let y = 18;
@@ -569,6 +620,16 @@ function downloadReport() {
     });
     if (teacherMode && name!=='Sin docente identificado' && categories.every(label=>ordinal.includes(label))) {
       write('Bastante + Mucho · '+fmt.format(((counts.get('Bastante')||0)+(counts.get('Mucho')||0))/n*100)+' %');
+    }
+  }
+  if (reading.length) {
+    room(25);
+    y+=5;
+    write('Análisis del centro y las etapas',13,true);
+    for (const {label,lines} of reading) {
+      room(18);
+      write(label,11,true);
+      for (const line of lines) write(line);
     }
   }
   doc.save('encuesta-'+(teacherMode?'profesorado':'resultados')+'.pdf');
