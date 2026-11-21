@@ -10,6 +10,7 @@ function validEdition(data) {
     ['', 'english','spoken','cambridge'].includes(field.teacher)) &&
     data.rows.every(row => Array.isArray(row) && row.length === 4 + data.fields.length &&
       row.every((value, index) => text(value, index < 4 ? 160 : 500))) &&
+    (data.curriculum===undefined || (Array.isArray(data.curriculum) && data.curriculum.length<=1000 && data.curriculum.every(row=>Array.isArray(row)&&row.length===3&&text(row[0])&&text(row[1],160)&&typeof row[2]==='boolean'))) &&
     Array.isArray(data.roster) && data.roster.length <= 3000 &&
     data.roster.every(row => Array.isArray(row) && row.length === 4 && row.every(value => text(value,160)));
 }
@@ -57,17 +58,18 @@ export default {
         } while (cursor);
         return output(result.sort((a,b)=>b.year.localeCompare(a.year)||a.label.localeCompare(b.label)));
       }
-      if (!['POST','PUT'].includes(request.method) || request.headers.get('Origin') !== url.origin) return output({error:'Operación no permitida.'},403);
+      if (!['POST','PUT','PATCH'].includes(request.method) || request.headers.get('Origin') !== url.origin) return output({error:'Operación no permitida.'},403);
       if (Number(request.headers.get('Content-Length')) > LIMIT) return output({error:'El archivo supera el tamaño admitido.'},413);
       const body = await request.text();
       if (body.length > LIMIT) return output({error:'El archivo supera el tamaño admitido.'},413);
       const {id,data} = JSON.parse(body);
-      if (request.method === 'PUT') {
+      if (request.method === 'PUT' || request.method === 'PATCH') {
         if (!/^[a-f0-9]{64}$/.test(id)) return output({error:'Edición no válida.'},400);
         const existing = await env.BUCKET.get(prefix+id);
         if (!existing) return output({error:'Edición no encontrada.'},404);
-        const updated = {...await existing.json(),roster:data};
-        if (!validEdition(updated)) return output({error:'Comprueba las asignaciones de profesorado.'},400);
+        const property=request.method==='PUT'?'roster':'curriculum';
+        const updated = {...await existing.json(),[property]:data};
+        if (!validEdition(updated)) return output({error:'Comprueba los cambios de la edición.'},400);
         const saved = await env.BUCKET.put(prefix+id,JSON.stringify(updated),{
           onlyIf:{etagMatches:existing.etag},customMetadata:existing.customMetadata
         });

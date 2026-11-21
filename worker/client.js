@@ -200,18 +200,102 @@ function category(raw) {
   const first = raw.split(/\s+\/\s+/)[0];
   return ordinal.find(item=>norm(item)===norm(first)) || first;
 }
+const qualityCache = new WeakMap();
+const curriculumKey = (subject,level) => JSON.stringify([subjectKey(subject),levelKey(level)]);
+const outsideCurriculum = (subject,level) => subjectKey(subject)==='steam' && educationStage(level)==='Bachillerato';
+const markedNotTaken = answer => /^no (?:la curso|curso (?:la|esta) asignatura)[.!]?$/.test(norm(answer));
+function notTakenOrExcluded(answer) {return markedNotTaken(answer) || excluded.has(norm(answer));}
+
+function curriculumReview(data) {
+  if (qualityCache.has(data)) return qualityCache.get(data);
+  const overrides = new Map((data.curriculum || []).map(([subject,level,omit])=>[curriculumKey(subject,level),omit]));
+  const cohorts = new Map();
+  for (const row of data.rows) {
+    if (!cohorts.has(row[0])) cohorts.set(row[0],[]);
+    cohorts.get(row[0]).push(row);
+  }
+  const combinations = new Map();
+  data.fields.forEach((field,index)=>{
+    if (!field.m || field.identity) return;
+    for (const [level,rows] of cohorts) {
+      const key=curriculumKey(field.m,level);
+      if (!combinations.has(key)) combinations.set(key,{subject:field.m,level,valid:0,notTaken:0,pupils:new Set()});
+      const item=combinations.get(key);
+      let valid=0;
+      for (const row of rows) {
+        const answer=category(row[index+4]);
+        if (markedNotTaken(answer)) item.notTaken++;
+        else if (answer && !notTakenOrExcluded(answer)) {
+          valid++;
+          item.pupils.add(row);
+        }
+      }
+      item.valid+=valid;
+    }
+  });
+  const choices=[];
+  const omitted=new Set();
+  for (const [key,item] of combinations) {
+    const known=outsideCurriculum(item.subject,item.level);
+    const suspicious=item.pupils.size>0 && item.pupils.size<=3 && item.notTaken>=9*item.valid && item.notTaken>=10;
+    const enabled=overrides.get(key) ?? known;
+    if (enabled) omitted.add(key);
+    if (known || suspicious || overrides.has(key)) choices.push({...item,known,enabled});
+  }
+  const review={choices,omitted};
+  qualityCache.set(data,review);
+  return review;
+}
+function drawCurriculum(data,id) {
+  const {choices}=curriculumReview(data);
+  $('quality').hidden=!choices.length;
+  const list=$('quality-list');
+  list.replaceChildren();
+  for (const item of choices) {
+    const title=item.subject+' · '+item.level;
+    const checkbox=node('input');
+    checkbox.type='checkbox';
+    checkbox.checked=item.enabled;
+    const label=node('label',undefined,'quality-option');
+    label.append(checkbox,node('span','Excluir '+title));
+    const evidence=item.valid+' respuestas computables en '+item.pupils.size+' filas y '+item.notTaken+' marcas de «No curso la asignatura» entre las preguntas de esta materia.';
+    const reason=item.known?'Fuera del plan de estudios indicado. ':'Posible incoherencia. Confirma si la materia se imparte en ese curso. ';
+    const block=node('div',undefined,'quality-item');
+    block.append(label,node('p',reason+evidence,'muted'));
+    list.append(block);
+    checkbox.onchange=async()=>{
+      // Serialize edits so a quick second click cannot overwrite a stored rule.
+      list.querySelectorAll('input').forEach(input=>{input.disabled=true;});
+      try {
+        const curriculum=(data.curriculum||[]).filter(([subject,level])=>curriculumKey(subject,level)!==curriculumKey(item.subject,item.level));
+        curriculum.push([item.subject,item.level,checkbox.checked]);
+        await api(null,'PATCH',{id,data:curriculum});
+        cache.delete(id);
+        if ($('edition').value===id && activeTab!=='import') await update('quality');
+        status(checkbox.checked?'Exclusión guardada.':'Exclusión desactivada.');
+      } catch(error) {
+        checkbox.checked=item.enabled;
+        status(error.message,true);
+      } finally {
+        list.querySelectorAll('input').forEach(input=>{input.disabled=false;});
+      }
+    };
+  }
+}
 function distribution(data,field,filter) {
   const counts = new Map();
-  let skip = 0;
-  if (!field) return {counts,skip,missing:true};
+  let skip = 0, offPlan = 0;
+  if (!field) return {counts,skip,offPlan,missing:true};
   const i = data.fields.indexOf(field)+4;
+  const omitted = field.m ? curriculumReview(data).omitted : new Set();
   for (const row of data.rows) {
     if (!filter(row)) continue;
     const answer = category(row[i]);
-    if (!answer || excluded.has(norm(answer))) {skip++;continue;}
+    if (!answer || notTakenOrExcluded(answer)) {skip++;continue;}
+    if (omitted.has(curriculumKey(field.m,row[0]))) {skip++;offPlan++;continue;}
     counts.set(answer,(counts.get(answer)||0)+1);
   }
-  return {counts,skip};
+  return {counts,skip,offPlan};
 }
 function teacherFor(data,field,row) {
   const type = teacherType(field.m);
@@ -253,12 +337,13 @@ function overview(data,fields) {
 }
 function sumDistributions(results) {
   const counts = new Map();
-  let skip = 0;
+  let skip = 0, offPlan = 0;
   for (const result of results) {
     skip += result.skip;
+    offPlan += result.offPlan || 0;
     for (const [answer,count] of result.counts) counts.set(answer,(counts.get(answer)||0)+count);
   }
-  return {counts,skip};
+  return {counts,skip,offPlan};
 }
 const rubricBands = [
   {limit:25,label:'Bueno',color:'#258348',rule:'Hasta 25 %',action:'Mantén esta práctica e identifica qué está funcionando.'},
@@ -436,7 +521,10 @@ function display(series,field,teacherMode) {
     $('level').parentElement.hidden ? '' : ($('level').value || 'Todos los niveles'),
     $('group').parentElement.hidden ? '' : ($('group').value ? 'Grupo '+$('group').value : 'Todos los grupos')
   ].filter(Boolean);
-  const note = pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '';
+  const note = [
+    pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '',
+    series.some(([,result])=>result.offPlan) ? 'Se han excluido valoraciones de materias no impartidas en el curso. Consulta el recuento en cada resultado.' : ''
+  ].filter(Boolean).join(' ');
   const byLevel = !teacherMode && $('view').value==='level';
   const bySubject = !teacherMode && $('view').value==='subject';
   const readingTitle = isOverview ? 'Análisis del centro y las etapas' : bySubject ? 'Análisis por materia' : 'Análisis por nivel';
@@ -493,19 +581,19 @@ function display(series,field,teacherMode) {
   const comparable = teacherMode && categories.length && categories.every(label=>ordinal.includes(label));
   if (comparable) charts.append(node('p','Bastante + Mucho resume las dos categorías más altas. Interpreta ese porcentaje según la pregunta y el número de respuestas.','muted'));
   if (teacherMode) charts.append(node('p','El bloque «Sin docente identificado» muestra respuestas del grupo sin atribuirlas a una persona.','muted'));
-  for (const [name,{counts,skip,missing}] of series) {
+  for (const [name,{counts,skip,missing,offPlan}] of series) {
     const plot = node('article',undefined,'plot');
     plot.append(node('strong',name));
     const n = [...counts.values()].reduce((sum,value)=>sum+value,0);
     if (missing || !n) {
-      plot.append(node('p',missing?'Pregunta no disponible en esta edición.':'Sin respuestas válidas'+(skip?' · '+skip+' fuera del cálculo':'')+'.'));
+      plot.append(node('p',missing?'Pregunta no disponible en esta edición.':'Sin respuestas válidas'+(skip?' · '+skip+' fuera del cálculo'+(offPlan?' ('+offPlan+' por materia no impartida)':''):'')+'.'));
       plots.append(plot);
       continue;
     }
     const bars = node('div',undefined,'bars');
     bars.setAttribute('aria-hidden','true');
     const details = node('details');
-    details.append(node('summary',n+' válidas'+(skip?' · '+skip+' fuera del cálculo':'')));
+    details.append(node('summary',n+' válidas'+(skip?' · '+skip+' fuera del cálculo'+(offPlan?' ('+offPlan+' por materia no impartida)':''):'')));
     categories.forEach((label,i)=>{
       const count = counts.get(label)||0;
       const bar = node('div',undefined,'bar');
@@ -532,6 +620,7 @@ async function update(changed) {
     $('charts').replaceChildren(node('p','Importa una edición para consultar los gráficos.'));
     $('analysis').querySelector('.row').hidden = true;
     $('teacher-info').hidden = true;
+    $('quality').hidden = true;
     return;
   }
   $('analysis').querySelector('.row').hidden = false;
@@ -539,6 +628,7 @@ async function update(changed) {
   try {
     const data = await edition(id);
     if (version!==renderCount) return;
+    if (changed==='edition' || changed==='quality') drawCurriculum(data,id);
     if (changed==='edition') {
       const eligible = questionFields(data).filter(field=>activeTab!=='teachers'||field.m);
       options('question',uniq(eligible.map(field=>field.q)),eligible.length?undefined:'Sin preguntas por materia');
@@ -687,16 +777,16 @@ function downloadReport() {
     });
     y=baseline+15;
   }
-  for (const [name,{counts,skip,missing}] of series) {
+  for (const [name,{counts,skip,missing,offPlan}] of series) {
     const n = [...counts.values()].reduce((sum,value)=>sum+value,0);
     room(isOverview?24:64);
     y+=4;
     write(name,12,true);
     if (!n) {
-      write(missing?'Pregunta no disponible en esta edición.':'Sin respuestas válidas · '+skip+' fuera del cálculo.');
+      write(missing?'Pregunta no disponible en esta edición.':'Sin respuestas válidas · '+skip+' fuera del cálculo'+(offPlan?' ('+offPlan+' por materia no impartida)':'')+'.');
       continue;
     }
-    write(n+' válidas'+(skip?' · '+skip+' fuera del cálculo':''));
+    write(n+' válidas'+(skip?' · '+skip+' fuera del cálculo'+(offPlan?' ('+offPlan+' por materia no impartida)':''):''));
     if (!isOverview) {
       const width = Math.min(16,145/Math.max(categories.length,1));
       const baseline = y+30;

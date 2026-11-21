@@ -7,7 +7,7 @@
 <style>
 :root{font:16px/1.45 system-ui,sans-serif;color:#18304b;background:#edf3f7;--paper:#fff;--line:#cfdae5;--muted:#4d6479;--main:#075c64}
 *{box-sizing:border-box}body{margin:0}main{max-width:1040px;margin:auto;padding:clamp(15px,4vw,42px)}header{margin-bottom:20px}h1{font-size:clamp(1.75rem,4vw,2.7rem);letter-spacing:-.045em;margin:3px 0}h2{margin:0 0 12px;font-size:1.35rem}p{margin:.4rem 0 .85rem}small,.muted{color:var(--muted)}nav,.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}nav{margin-bottom:16px}section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:clamp(14px,3vw,25px);margin-bottom:14px}
-input,select,button{font:inherit;padding:8px 10px;border:1px solid #aabbc9;border-radius:8px;background:white;color:#18304b;max-width:100%}button{cursor:pointer}button:disabled{opacity:.55;cursor:default}button.active,.action{background:var(--main);color:white;border-color:var(--main)}label{display:grid;gap:4px;font-size:.9rem;min-width:0}label.wide{flex:1;min-width:min(100%,240px)}label.wide select{width:100%}[hidden]{display:none!important}#status{color:var(--muted);margin-bottom:12px}#status.error{color:#9b271f}.mapping{max-height:390px;overflow:auto;margin:12px 0}.mapping label{margin:7px 0}.mapping input{width:100%}ul{padding-left:1.25rem}.legend{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.legend span{display:inline-flex;gap:5px;align-items:center}.swatch{width:12px;height:12px;border-radius:3px}.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:17px}.plot{min-width:0}.bars{display:flex;align-items:end;justify-content:center;gap:4px;height:110px;margin:6px 0;border-bottom:1px solid #6e879a;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#dce6ed calc(25% - 1px),#dce6ed 25%)}.bar{flex:1;max-width:36px}.plot p{font-size:.9rem}.band{height:12px;background:#e8eef4;border-radius:8px;overflow:hidden;margin:6px 0}.band div{height:100%;background:var(--main)}summary{cursor:pointer;margin:8px 0}.trend{width:100%;height:auto;display:block}.trend text{fill:#18304b;font:13px system-ui}.trend .grid{stroke:#cbd8e3;stroke-width:1}.trend circle{stroke:white;stroke-width:1}.level-scroll{overflow:auto;margin:0 0 16px}.level-chart{display:grid;grid-template-columns:repeat(var(--level-count),minmax(75px,1fr));min-width:calc(var(--level-count)*80px);gap:5px;text-align:center}.level-chart .bars{height:175px}.overview-reading{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}.overview-reading h3{margin:0 0 12px}.overview-reading h4{margin:14px 0 4px}.overview-reading p{margin:4px 0 8px}.overview-reading article{border-top:1px solid var(--line);margin-top:14px;padding:4px 0 8px}.rubric-control{width:fit-content;max-width:100%;margin-bottom:10px}.rubric-priority{border-left:4px solid #c93238;padding:5px 10px;font-weight:600}.rubric-badge{display:inline-block;margin:0 0 0 9px;border:1px solid var(--rubric-color);border-left-width:5px;border-radius:6px;padding:2px 7px;font-size:.83rem}.rubric-track{display:flex;position:relative;height:9px;margin-top:12px;border-radius:5px}.rubric-track span:first-child{border-radius:5px 0 0 5px}.rubric-track span:nth-child(3){border-radius:0 5px 5px 0}.rubric-track i{position:absolute;top:-3px;height:15px;width:3px;transform:translateX(-50%);background:#18304b;box-shadow:0 0 0 1px white}.rubric-ticks{height:23px;position:relative;margin-top:4px;color:var(--muted)}.rubric-ticks small{position:absolute;transform:translateX(-50%)}.rubric-ticks small:first-child{transform:none}.rubric-ticks small:last-child{transform:translateX(-100%)}
+input,select,button{font:inherit;padding:8px 10px;border:1px solid #aabbc9;border-radius:8px;background:white;color:#18304b;max-width:100%}button{cursor:pointer}button:disabled{opacity:.55;cursor:default}button.active,.action{background:var(--main);color:white;border-color:var(--main)}label{display:grid;gap:4px;font-size:.9rem;min-width:0}label.wide{flex:1;min-width:min(100%,240px)}label.wide select{width:100%}[hidden]{display:none!important}#status{color:var(--muted);margin-bottom:12px}#status.error{color:#9b271f}.mapping{max-height:390px;overflow:auto;margin:12px 0}.mapping label{margin:7px 0}.mapping input{width:100%}ul{padding-left:1.25rem}.legend{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.legend span{display:inline-flex;gap:5px;align-items:center}.swatch{width:12px;height:12px;border-radius:3px}.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:17px}.plot{min-width:0}.bars{display:flex;align-items:end;justify-content:center;gap:4px;height:110px;margin:6px 0;border-bottom:1px solid #6e879a;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#dce6ed calc(25% - 1px),#dce6ed 25%)}.bar{flex:1;max-width:36px}.plot p{font-size:.9rem}.band{height:12px;background:#e8eef4;border-radius:8px;overflow:hidden;margin:6px 0}.band div{height:100%;background:var(--main)}summary{cursor:pointer;margin:8px 0}.trend{width:100%;height:auto;display:block}.trend text{fill:#18304b;font:13px system-ui}.trend .grid{stroke:#cbd8e3;stroke-width:1}.trend circle{stroke:white;stroke-width:1}.level-scroll{overflow:auto;margin:0 0 16px}.level-chart{display:grid;grid-template-columns:repeat(var(--level-count),minmax(75px,1fr));min-width:calc(var(--level-count)*80px);gap:5px;text-align:center}.level-chart .bars{height:175px}.overview-reading{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}.overview-reading h3{margin:0 0 12px}.overview-reading h4{margin:14px 0 4px}.overview-reading p{margin:4px 0 8px}.overview-reading article{border-top:1px solid var(--line);margin-top:14px;padding:4px 0 8px}.quality-item{border-bottom:1px solid var(--line);padding:8px 0}.quality-item p{margin:4px 0}.quality-option{display:flex;align-items:center;gap:7px;font-weight:600}.rubric-control{width:fit-content;max-width:100%;margin-bottom:10px}.rubric-priority{border-left:4px solid #c93238;padding:5px 10px;font-weight:600}.rubric-badge{display:inline-block;margin:0 0 0 9px;border:1px solid var(--rubric-color);border-left-width:5px;border-radius:6px;padding:2px 7px;font-size:.83rem}.rubric-track{display:flex;position:relative;height:9px;margin-top:12px;border-radius:5px}.rubric-track span:first-child{border-radius:5px 0 0 5px}.rubric-track span:nth-child(3){border-radius:0 5px 5px 0}.rubric-track i{position:absolute;top:-3px;height:15px;width:3px;transform:translateX(-50%);background:#18304b;box-shadow:0 0 0 1px white}.rubric-ticks{height:23px;position:relative;margin-top:4px;color:var(--muted)}.rubric-ticks small{position:absolute;transform:translateX(-50%)}.rubric-ticks small:first-child{transform:none}.rubric-ticks small:last-child{transform:translateX(-100%)}
 </style>
 <main>
 <header><small>ENCUESTA DEL ALUMNADO</small><h1>Tu opinión es importante</h1><p class="muted">Histórico de Microsoft Forms y análisis para la formación docente</p></header>
@@ -47,6 +47,11 @@ input,select,button{font:inherit;padding:8px 10px;border:1px solid #aabbc9;borde
 </div>
 <label id="metric-label" hidden>Respuesta que se quiere seguir<select id="metric"></select></label>
 <div class="row" style="justify-content:flex-end;margin-top:12px"><button id="pdf" disabled>Descargar PDF</button></div>
+<details id="quality" hidden>
+<summary>Revisión de materias no cursadas</summary>
+<p class="muted">Las exclusiones se aplican a todas las preguntas de esa materia y curso en la edición seleccionada. Las respuestas del Excel original se conservan.</p>
+<div id="quality-list"></div>
+</details>
 <div id="charts" aria-live="polite"></div>
 </section>
 </main>
@@ -111,8 +116,9 @@ async function api(id,method='GET',body) {
         return;
       }
       if(!existing){fail('Edición no encontrada.');return;}
-      if(method==='PUT'){
-        store.put({id:key,data:{...existing.data,roster:body.data}});
+      if(method==='PUT' || method==='PATCH'){
+        const property=method==='PUT'?'roster':'curriculum';
+        store.put({id:key,data:{...existing.data,[property]:body.data}});
         done({id:key});
         return;
       }
@@ -128,6 +134,7 @@ function validBackup(record) {
     typeof data.label==='string' && Array.isArray(data.fields) && data.fields.length>0 &&
     data.fields.every(field=>field&&typeof field.q==='string'&&typeof field.m==='string') &&
     Array.isArray(data.rows) && data.rows.every(row=>strings(row)&&row.length===data.fields.length+4) &&
+    (data.curriculum===undefined || (Array.isArray(data.curriculum) && data.curriculum.every(row=>Array.isArray(row)&&row.length===3&&typeof row[0]==='string'&&typeof row[1]==='string'&&typeof row[2]==='boolean'))) &&
     Array.isArray(data.roster) && data.roster.every(row=>strings(row)&&row.length===4);
 }
 
@@ -363,18 +370,102 @@ function category(raw) {
   const first = raw.split(/\s+\/\s+/)[0];
   return ordinal.find(item=>norm(item)===norm(first)) || first;
 }
+const qualityCache = new WeakMap();
+const curriculumKey = (subject,level) => JSON.stringify([subjectKey(subject),levelKey(level)]);
+const outsideCurriculum = (subject,level) => subjectKey(subject)==='steam' && educationStage(level)==='Bachillerato';
+const markedNotTaken = answer => /^no (?:la curso|curso (?:la|esta) asignatura)[.!]?$/.test(norm(answer));
+function notTakenOrExcluded(answer) {return markedNotTaken(answer) || excluded.has(norm(answer));}
+
+function curriculumReview(data) {
+  if (qualityCache.has(data)) return qualityCache.get(data);
+  const overrides = new Map((data.curriculum || []).map(([subject,level,omit])=>[curriculumKey(subject,level),omit]));
+  const cohorts = new Map();
+  for (const row of data.rows) {
+    if (!cohorts.has(row[0])) cohorts.set(row[0],[]);
+    cohorts.get(row[0]).push(row);
+  }
+  const combinations = new Map();
+  data.fields.forEach((field,index)=>{
+    if (!field.m || field.identity) return;
+    for (const [level,rows] of cohorts) {
+      const key=curriculumKey(field.m,level);
+      if (!combinations.has(key)) combinations.set(key,{subject:field.m,level,valid:0,notTaken:0,pupils:new Set()});
+      const item=combinations.get(key);
+      let valid=0;
+      for (const row of rows) {
+        const answer=category(row[index+4]);
+        if (markedNotTaken(answer)) item.notTaken++;
+        else if (answer && !notTakenOrExcluded(answer)) {
+          valid++;
+          item.pupils.add(row);
+        }
+      }
+      item.valid+=valid;
+    }
+  });
+  const choices=[];
+  const omitted=new Set();
+  for (const [key,item] of combinations) {
+    const known=outsideCurriculum(item.subject,item.level);
+    const suspicious=item.pupils.size>0 && item.pupils.size<=3 && item.notTaken>=9*item.valid && item.notTaken>=10;
+    const enabled=overrides.get(key) ?? known;
+    if (enabled) omitted.add(key);
+    if (known || suspicious || overrides.has(key)) choices.push({...item,known,enabled});
+  }
+  const review={choices,omitted};
+  qualityCache.set(data,review);
+  return review;
+}
+function drawCurriculum(data,id) {
+  const {choices}=curriculumReview(data);
+  $('quality').hidden=!choices.length;
+  const list=$('quality-list');
+  list.replaceChildren();
+  for (const item of choices) {
+    const title=item.subject+' · '+item.level;
+    const checkbox=node('input');
+    checkbox.type='checkbox';
+    checkbox.checked=item.enabled;
+    const label=node('label',undefined,'quality-option');
+    label.append(checkbox,node('span','Excluir '+title));
+    const evidence=item.valid+' respuestas computables en '+item.pupils.size+' filas y '+item.notTaken+' marcas de «No curso la asignatura» entre las preguntas de esta materia.';
+    const reason=item.known?'Fuera del plan de estudios indicado. ':'Posible incoherencia. Confirma si la materia se imparte en ese curso. ';
+    const block=node('div',undefined,'quality-item');
+    block.append(label,node('p',reason+evidence,'muted'));
+    list.append(block);
+    checkbox.onchange=async()=>{
+      // Serialize edits so a quick second click cannot overwrite a stored rule.
+      list.querySelectorAll('input').forEach(input=>{input.disabled=true;});
+      try {
+        const curriculum=(data.curriculum||[]).filter(([subject,level])=>curriculumKey(subject,level)!==curriculumKey(item.subject,item.level));
+        curriculum.push([item.subject,item.level,checkbox.checked]);
+        await api(null,'PATCH',{id,data:curriculum});
+        cache.delete(id);
+        if ($('edition').value===id && activeTab!=='import') await update('quality');
+        status(checkbox.checked?'Exclusión guardada.':'Exclusión desactivada.');
+      } catch(error) {
+        checkbox.checked=item.enabled;
+        status(error.message,true);
+      } finally {
+        list.querySelectorAll('input').forEach(input=>{input.disabled=false;});
+      }
+    };
+  }
+}
 function distribution(data,field,filter) {
   const counts = new Map();
-  let skip = 0;
-  if (!field) return {counts,skip,missing:true};
+  let skip = 0, offPlan = 0;
+  if (!field) return {counts,skip,offPlan,missing:true};
   const i = data.fields.indexOf(field)+4;
+  const omitted = field.m ? curriculumReview(data).omitted : new Set();
   for (const row of data.rows) {
     if (!filter(row)) continue;
     const answer = category(row[i]);
-    if (!answer || excluded.has(norm(answer))) {skip++;continue;}
+    if (!answer || notTakenOrExcluded(answer)) {skip++;continue;}
+    if (omitted.has(curriculumKey(field.m,row[0]))) {skip++;offPlan++;continue;}
     counts.set(answer,(counts.get(answer)||0)+1);
   }
-  return {counts,skip};
+  return {counts,skip,offPlan};
 }
 function teacherFor(data,field,row) {
   const type = teacherType(field.m);
@@ -416,12 +507,13 @@ function overview(data,fields) {
 }
 function sumDistributions(results) {
   const counts = new Map();
-  let skip = 0;
+  let skip = 0, offPlan = 0;
   for (const result of results) {
     skip += result.skip;
+    offPlan += result.offPlan || 0;
     for (const [answer,count] of result.counts) counts.set(answer,(counts.get(answer)||0)+count);
   }
-  return {counts,skip};
+  return {counts,skip,offPlan};
 }
 const rubricBands = [
   {limit:25,label:'Bueno',color:'#258348',rule:'Hasta 25 %',action:'Mantén esta práctica e identifica qué está funcionando.'},
@@ -599,7 +691,10 @@ function display(series,field,teacherMode) {
     $('level').parentElement.hidden ? '' : ($('level').value || 'Todos los niveles'),
     $('group').parentElement.hidden ? '' : ($('group').value ? 'Grupo '+$('group').value : 'Todos los grupos')
   ].filter(Boolean);
-  const note = pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '';
+  const note = [
+    pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '',
+    series.some(([,result])=>result.offPlan) ? 'Se han excluido valoraciones de materias no impartidas en el curso. Consulta el recuento en cada resultado.' : ''
+  ].filter(Boolean).join(' ');
   const byLevel = !teacherMode && $('view').value==='level';
   const bySubject = !teacherMode && $('view').value==='subject';
   const readingTitle = isOverview ? 'Análisis del centro y las etapas' : bySubject ? 'Análisis por materia' : 'Análisis por nivel';
@@ -656,19 +751,19 @@ function display(series,field,teacherMode) {
   const comparable = teacherMode && categories.length && categories.every(label=>ordinal.includes(label));
   if (comparable) charts.append(node('p','Bastante + Mucho resume las dos categorías más altas. Interpreta ese porcentaje según la pregunta y el número de respuestas.','muted'));
   if (teacherMode) charts.append(node('p','El bloque «Sin docente identificado» muestra respuestas del grupo sin atribuirlas a una persona.','muted'));
-  for (const [name,{counts,skip,missing}] of series) {
+  for (const [name,{counts,skip,missing,offPlan}] of series) {
     const plot = node('article',undefined,'plot');
     plot.append(node('strong',name));
     const n = [...counts.values()].reduce((sum,value)=>sum+value,0);
     if (missing || !n) {
-      plot.append(node('p',missing?'Pregunta no disponible en esta edición.':'Sin respuestas válidas'+(skip?' · '+skip+' fuera del cálculo':'')+'.'));
+      plot.append(node('p',missing?'Pregunta no disponible en esta edición.':'Sin respuestas válidas'+(skip?' · '+skip+' fuera del cálculo'+(offPlan?' ('+offPlan+' por materia no impartida)':''):'')+'.'));
       plots.append(plot);
       continue;
     }
     const bars = node('div',undefined,'bars');
     bars.setAttribute('aria-hidden','true');
     const details = node('details');
-    details.append(node('summary',n+' válidas'+(skip?' · '+skip+' fuera del cálculo':'')));
+    details.append(node('summary',n+' válidas'+(skip?' · '+skip+' fuera del cálculo'+(offPlan?' ('+offPlan+' por materia no impartida)':''):'')));
     categories.forEach((label,i)=>{
       const count = counts.get(label)||0;
       const bar = node('div',undefined,'bar');
@@ -695,6 +790,7 @@ async function update(changed) {
     $('charts').replaceChildren(node('p','Importa una edición para consultar los gráficos.'));
     $('analysis').querySelector('.row').hidden = true;
     $('teacher-info').hidden = true;
+    $('quality').hidden = true;
     return;
   }
   $('analysis').querySelector('.row').hidden = false;
@@ -702,6 +798,7 @@ async function update(changed) {
   try {
     const data = await edition(id);
     if (version!==renderCount) return;
+    if (changed==='edition' || changed==='quality') drawCurriculum(data,id);
     if (changed==='edition') {
       const eligible = questionFields(data).filter(field=>activeTab!=='teachers'||field.m);
       options('question',uniq(eligible.map(field=>field.q)),eligible.length?undefined:'Sin preguntas por materia');
@@ -850,16 +947,16 @@ function downloadReport() {
     });
     y=baseline+15;
   }
-  for (const [name,{counts,skip,missing}] of series) {
+  for (const [name,{counts,skip,missing,offPlan}] of series) {
     const n = [...counts.values()].reduce((sum,value)=>sum+value,0);
     room(isOverview?24:64);
     y+=4;
     write(name,12,true);
     if (!n) {
-      write(missing?'Pregunta no disponible en esta edición.':'Sin respuestas válidas · '+skip+' fuera del cálculo.');
+      write(missing?'Pregunta no disponible en esta edición.':'Sin respuestas válidas · '+skip+' fuera del cálculo'+(offPlan?' ('+offPlan+' por materia no impartida)':'')+'.');
       continue;
     }
-    write(n+' válidas'+(skip?' · '+skip+' fuera del cálculo':''));
+    write(n+' válidas'+(skip?' · '+skip+' fuera del cálculo'+(offPlan?' ('+offPlan+' por materia no impartida)':''):''));
     if (!isOverview) {
       const width = Math.min(16,145/Math.max(categories.length,1));
       const baseline = y+30;

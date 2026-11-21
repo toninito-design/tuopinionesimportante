@@ -55,8 +55,9 @@ async function api(id,method='GET',body) {
         return;
       }
       if(!existing){fail('Edición no encontrada.');return;}
-      if(method==='PUT'){
-        store.put({id:key,data:{...existing.data,roster:body.data}});
+      if(method==='PUT' || method==='PATCH'){
+        const property=method==='PUT'?'roster':'curriculum';
+        store.put({id:key,data:{...existing.data,[property]:body.data}});
         done({id:key});
         return;
       }
@@ -72,6 +73,7 @@ function validBackup(record) {
     typeof data.label==='string' && Array.isArray(data.fields) && data.fields.length>0 &&
     data.fields.every(field=>field&&typeof field.q==='string'&&typeof field.m==='string') &&
     Array.isArray(data.rows) && data.rows.every(row=>strings(row)&&row.length===data.fields.length+4) &&
+    (data.curriculum===undefined || (Array.isArray(data.curriculum) && data.curriculum.every(row=>Array.isArray(row)&&row.length===3&&typeof row[0]==='string'&&typeof row[1]==='string'&&typeof row[2]==='boolean'))) &&
     Array.isArray(data.roster) && data.roster.every(row=>strings(row)&&row.length===4);
 }
 
