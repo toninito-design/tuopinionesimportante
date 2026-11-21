@@ -260,10 +260,35 @@ function sumDistributions(results) {
   }
   return {counts,skip};
 }
-function resultReading(series, question, categories, reference, referenceLabel, firstIsReference=false) {
-  const rating = categories.length > 0 && categories.every(answer=>ordinal.includes(answer));
-  const wording = norm(question);
-  const favorable = /claro y util|resolviendo dudas|resuelve dudas|planificacion de tareas|planifican las tareas|participacion oral|me ayudan|me resulta util|me he sentido atendid|son interesantes/.test(wording);
+const rubricBands = [
+  {limit:25,label:'Bueno',color:'#258348',rule:'Hasta 25 %',action:'Mantén esta práctica e identifica qué está funcionando.'},
+  {limit:40,label:'Mejorable',color:'#e7b800',rule:'Más de 25 % y hasta 40 %',action:'Revisa en qué cursos o materias se concentran las respuestas que se alejan del objetivo.'},
+  {limit:100,label:'Crítico',color:'#c93238',rule:'Más de 40 %',action:'Prioriza una actuación de mejora y comprueba su efecto en la siguiente encuesta.'}
+];
+const objectives = new Map();
+const objectiveKey = question => 'encuesta-baremo:'+location.pathname.replace(/(?:index\.html)?\/?$/,'/')+norm(question);
+function targetFor(question) {
+  const key=objectiveKey(question);
+  let saved=objectives.get(key);
+  if (!saved) {
+    try { saved=localStorage.getItem(key); } catch {}
+  }
+  if (['high','low','pending'].includes(saved)) return saved;
+  return /claro y util|resolviendo dudas|resuelve dudas|planificacion de tareas|planifican las tareas|participacion oral|me ayudan|me resulta util|me he sentido atendid|son interesantes/.test(norm(question))?'high':'pending';
+}
+function setTarget(question,target) {
+  const key=objectiveKey(question);
+  objectives.set(key,target);
+  try { localStorage.setItem(key,target); } catch {}
+}
+function rubricResult(outside,total) {
+  const band=rubricBands.findIndex(({limit})=>outside*100<=limit*total);
+  return {value:100*outside/total,band,provisional:total<10};
+}
+const hasRatingScale = categories => categories.length>0 && categories.every(answer=>ordinal.includes(answer));
+const scaleTitle = target => target==='low'?'Fuera del objetivo · Bastante + Mucho':'Fuera del objetivo · Nada / Nunca + Poco';
+function resultReading(series, question, categories, reference, referenceLabel, firstIsReference=false, target='pending') {
+  const rating = hasRatingScale(categories);
   const percent = (count,total)=>fmt.format(100*count/total)+' % ('+count+' de '+total+')';
   const referenceSize = validCount(reference);
   const highCount = result=>(result.counts.get('Bastante')||0)+(result.counts.get('Mucho')||0);
@@ -271,17 +296,19 @@ function resultReading(series, question, categories, reference, referenceLabel, 
     const size=validCount(result);
     if (!size) return {label,lines:['Sin respuestas válidas para esta selección.']};
     const lines=[];
+    let rubric;
     if (rating) {
       const high=highCount(result);
       const low=size-high;
-      if (favorable) {
-        lines.push((high>size/2?'Fortaleza observada. ':'Valoraciones altas. ')+percent(high,size)+' respondió «Bastante» o «Mucho».');
-        if (low) lines.push('Área de mejora. '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco». Conviene revisar qué dificultades pueden explicar estas respuestas.');
+      lines.push(percent(high,size)+' respondió «Bastante» o «Mucho» y '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco».');
+      if (target==='pending') {
+        lines.push('Pendiente de interpretar según la pauta del centro. Elige qué respuestas se ajustan al objetivo para aplicar el baremo.');
       } else {
-        lines.push(percent(high,size)+' respondió «Bastante» o «Mucho» y '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco».');
-        lines.push(wording.includes('qustodio')
-          ? 'Aspecto a revisar. Comprueba si la frecuencia de uso coincide con las pautas del centro para este ámbito.'
-          : 'Aspecto a revisar. Contrasta esta distribución con el objetivo de la pregunta antes de interpretar un resultado alto o bajo como fortaleza o área de mejora.');
+        const outside=target==='low'?high:low;
+        rubric=rubricResult(outside,size);
+        const band=rubricBands[rubric.band];
+        lines.push(percent(outside,size)+' queda fuera del objetivo. Este porcentaje cae en el tramo '+band.label.toLowerCase()+' ('+band.rule.toLowerCase()+').');
+        if (!rubric.provisional) lines.push(band.action);
       }
       if ((!firstIsReference || index) && referenceSize) {
         const delta=100*(high/size-highCount(reference)/referenceSize);
@@ -291,18 +318,80 @@ function resultReading(series, question, categories, reference, referenceLabel, 
       const top=Math.max(...result.counts.values());
       const answers=[...result.counts].filter(([,count])=>count===top).map(([answer])=>'«'+answer+'»');
       lines.push((answers.length===1?'La opción más elegida fue ':'Las opciones más elegidas fueron ')+answers.join(', ')+' con '+percent(top,size)+(answers.length>1?' cada una.':'.'));
-      lines.push('La pregunta recoge una distribución de respuestas. Para identificar un área de mejora, compárala con el objetivo del centro para esta pregunta.');
+      lines.push('La escala de esta pregunta requiere su propio criterio de valoración.');
     }
-    if (size<10) lines.push('Hay pocas respuestas válidas. Interpreta el resultado con cautela.');
-    return {label,lines};
+    if (size<10) lines.push('Resultado orientativo. Hay menos de 10 respuestas válidas.');
+    return {label,lines,rubric};
   });
 }
-function renderReading(reading,title) {
+function renderReading(reading,title,question,target,rating) {
   const summary = node('div',undefined,'overview-reading');
   summary.append(node('h3',title));
-  for (const {label,lines} of reading) {
+  if (rating) {
+    const control=node('label','Objetivo para esta pregunta','rubric-control');
+    const select=node('select');
+    select.id='rubric-target';
+    select.append(
+      new Option('Por definir','pending'),
+      new Option('Se espera Bastante o Mucho','high'),
+      new Option('Se espera Nada, Nunca o Poco','low')
+    );
+    select.value=target;
+    select.onchange=async()=>{
+      setTarget(question,select.value);
+      await update('rubric');
+      $('rubric-target')?.focus();
+    };
+    control.append(select);
+    summary.append(control);
+    if (target!=='pending') {
+      summary.append(node('p',scaleTitle(target),'muted'));
+      const legend=node('div',undefined,'legend');
+      for (const band of rubricBands) {
+        const item=node('span');
+        const swatch=node('i',undefined,'swatch');
+        swatch.style.background=band.color;
+        item.append(swatch,band.label+' · '+band.rule);
+        legend.append(item);
+      }
+      summary.append(legend);
+      const priorities=reading.filter(({rubric})=>rubric && !rubric.provisional && rubric.band===2);
+      if (priorities.length) summary.append(node('p','Prioridad de actuación: '+priorities.map(item=>item.label).join(', ')+'.','rubric-priority'));
+    }
+  }
+  for (const {label,lines,rubric} of reading) {
     const item=node('article');
-    item.append(node('h4',label),...lines.map(line=>node('p',line)));
+    const heading=node('h4',label);
+    if (rubric) {
+      const band=rubricBands[rubric.band];
+      const badge=node('span',rubric.provisional?'Orientativo · '+band.label:band.label,'rubric-badge');
+      badge.style.setProperty('--rubric-color',band.color);
+      heading.append(badge);
+      item.append(heading);
+      const track=node('div',undefined,'rubric-track');
+      track.setAttribute('role','img');
+      track.setAttribute('aria-label',scaleTitle(target)+': '+fmt.format(rubric.value)+' %. '+badge.textContent+'.');
+      let previous=0;
+      for (const {limit,color} of rubricBands) {
+        const segment=node('span');
+        segment.style.width=(limit-previous)+'%';
+        segment.style.background=color;
+        track.append(segment);
+        previous=limit;
+      }
+      const marker=node('i');
+      marker.style.left='clamp(2px, '+rubric.value+'%, calc(100% - 2px))';
+      track.append(marker);
+      item.append(track);
+      const ticks=node('div',undefined,'rubric-ticks');
+      for (const value of [0,25,40,100]) {
+        const tick=node('small',value+' %');
+        tick.style.left=value+'%';
+        ticks.append(tick);
+      }
+      item.append(ticks);
+    } else item.append(heading);
+    item.append(...lines.map(line=>node('p',line)));
     summary.append(item);
   }
   return summary;
@@ -349,17 +438,20 @@ function display(series,field,teacherMode) {
   ].filter(Boolean);
   const note = pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '';
   const byLevel = !teacherMode && $('view').value==='level';
-  const readingTitle = isOverview ? 'Análisis del centro y las etapas' : 'Análisis por nivel';
+  const bySubject = !teacherMode && $('view').value==='subject';
+  const readingTitle = isOverview ? 'Análisis del centro y las etapas' : bySubject ? 'Análisis por materia' : 'Análisis por nivel';
+  const rating = hasRatingScale(categories);
+  const target = rating && (isOverview || byLevel || bySubject) ? targetFor(field.q) : 'pending';
   let reading = [];
   if (isOverview) {
     const stages = new Set(['Primaria','ESO','Bachillerato','Otras etapas']);
     const scopes = series.filter(([label],index)=>index===0 || stages.has(label));
-    reading = resultReading(scopes,field.q,categories,series[0][1],'del total del centro',true);
-  } else if (byLevel) {
+    reading = resultReading(scopes,field.q,categories,series[0][1],'del total del centro',true,target);
+  } else if (byLevel || bySubject) {
     const total = sumDistributions(series.map(([,result])=>result));
-    reading = resultReading(series,field.q,categories,total,'del resultado global de la selección');
+    reading = resultReading(series,field.q,categories,total,'del resultado global de la selección',false,target);
   }
-  report = {series,field,categories,context,teacherMode,isOverview,note,reading,readingTitle};
+  report = {series,field,categories,context,teacherMode,isOverview,note,reading,readingTitle,target};
   $('pdf').disabled = false;
   charts.append(node('p',context.join(' · '),'muted'));
   if (note) charts.append(node('p',note,'muted'));
@@ -429,7 +521,7 @@ function display(series,field,teacherMode) {
     plots.append(plot);
   }
   charts.append(plots);
-  if (reading.length) charts.append(renderReading(reading,readingTitle));
+  if (reading.length) charts.append(renderReading(reading,readingTitle,field.q,target,rating));
 }
 async function update(changed) {
   const version = ++renderCount;
@@ -552,7 +644,7 @@ refresh().catch(error=>status(error.message,true));
 function downloadReport() {
   if (!report) return;
   if(report.trend) return downloadTrend(report.trend);
-  const {series,field,categories,context,teacherMode,isOverview,note,reading=[],readingTitle} = report;
+  const {series,field,categories,context,teacherMode,isOverview,note,reading=[],readingTitle,target} = report;
   const doc = new window.jspdf.jsPDF();
   const margin = 16;
   let y = 18;
@@ -635,9 +727,28 @@ function downloadReport() {
     room(25);
     y+=5;
     write(readingTitle,13,true);
-    for (const {label,lines} of reading) {
-      room(18);
-      write(label,11,true);
+    if (reading.some(item=>item.rubric)) {
+      write(scaleTitle(target));
+      write(rubricBands.map(band=>band.label+' · '+band.rule).join(' | '),9);
+    }
+    for (const {label,lines,rubric} of reading) {
+      room(rubric?30:18);
+      const grade = rubric ? ' · '+(rubric.provisional?'Orientativo · ':'')+rubricBands[rubric.band].label : '';
+      if (rubric) doc.setTextColor(rubric.band===1?'#795b00':rubricBands[rubric.band].color);
+      write(label+grade,11,true);
+      doc.setTextColor('#000000');
+      if (rubric) {
+        let previous=0;
+        for (const {limit,color} of rubricBands) {
+          doc.setFillColor(color);
+          doc.rect(margin+previous*1.78,y,(limit-previous)*1.78,2.5,'F');
+          previous=limit;
+        }
+        doc.setDrawColor('#18304b');
+        const marker=margin+rubric.value*1.78;
+        doc.line(marker,y-1,marker,y+4);
+        y+=7;
+      }
       for (const line of lines) write(line);
     }
   }

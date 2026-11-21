@@ -7,7 +7,7 @@
 <style>
 :root{font:16px/1.45 system-ui,sans-serif;color:#18304b;background:#edf3f7;--paper:#fff;--line:#cfdae5;--muted:#4d6479;--main:#075c64}
 *{box-sizing:border-box}body{margin:0}main{max-width:1040px;margin:auto;padding:clamp(15px,4vw,42px)}header{margin-bottom:20px}h1{font-size:clamp(1.75rem,4vw,2.7rem);letter-spacing:-.045em;margin:3px 0}h2{margin:0 0 12px;font-size:1.35rem}p{margin:.4rem 0 .85rem}small,.muted{color:var(--muted)}nav,.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}nav{margin-bottom:16px}section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:clamp(14px,3vw,25px);margin-bottom:14px}
-input,select,button{font:inherit;padding:8px 10px;border:1px solid #aabbc9;border-radius:8px;background:white;color:#18304b;max-width:100%}button{cursor:pointer}button:disabled{opacity:.55;cursor:default}button.active,.action{background:var(--main);color:white;border-color:var(--main)}label{display:grid;gap:4px;font-size:.9rem;min-width:0}label.wide{flex:1;min-width:min(100%,240px)}label.wide select{width:100%}[hidden]{display:none!important}#status{color:var(--muted);margin-bottom:12px}#status.error{color:#9b271f}.mapping{max-height:390px;overflow:auto;margin:12px 0}.mapping label{margin:7px 0}.mapping input{width:100%}ul{padding-left:1.25rem}.legend{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.legend span{display:inline-flex;gap:5px;align-items:center}.swatch{width:12px;height:12px;border-radius:3px}.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:17px}.plot{min-width:0}.bars{display:flex;align-items:end;justify-content:center;gap:4px;height:110px;margin:6px 0;border-bottom:1px solid #6e879a;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#dce6ed calc(25% - 1px),#dce6ed 25%)}.bar{flex:1;max-width:36px}.plot p{font-size:.9rem}.band{height:12px;background:#e8eef4;border-radius:8px;overflow:hidden;margin:6px 0}.band div{height:100%;background:var(--main)}summary{cursor:pointer;margin:8px 0}.trend{width:100%;height:auto;display:block}.trend text{fill:#18304b;font:13px system-ui}.trend .grid{stroke:#cbd8e3;stroke-width:1}.trend circle{stroke:white;stroke-width:1}.level-scroll{overflow:auto;margin:0 0 16px}.level-chart{display:grid;grid-template-columns:repeat(var(--level-count),minmax(75px,1fr));min-width:calc(var(--level-count)*80px);gap:5px;text-align:center}.level-chart .bars{height:175px}.overview-reading{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}.overview-reading h3{margin:0 0 12px}.overview-reading h4{margin:14px 0 4px}.overview-reading p{margin:4px 0 8px}
+input,select,button{font:inherit;padding:8px 10px;border:1px solid #aabbc9;border-radius:8px;background:white;color:#18304b;max-width:100%}button{cursor:pointer}button:disabled{opacity:.55;cursor:default}button.active,.action{background:var(--main);color:white;border-color:var(--main)}label{display:grid;gap:4px;font-size:.9rem;min-width:0}label.wide{flex:1;min-width:min(100%,240px)}label.wide select{width:100%}[hidden]{display:none!important}#status{color:var(--muted);margin-bottom:12px}#status.error{color:#9b271f}.mapping{max-height:390px;overflow:auto;margin:12px 0}.mapping label{margin:7px 0}.mapping input{width:100%}ul{padding-left:1.25rem}.legend{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.legend span{display:inline-flex;gap:5px;align-items:center}.swatch{width:12px;height:12px;border-radius:3px}.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:17px}.plot{min-width:0}.bars{display:flex;align-items:end;justify-content:center;gap:4px;height:110px;margin:6px 0;border-bottom:1px solid #6e879a;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#dce6ed calc(25% - 1px),#dce6ed 25%)}.bar{flex:1;max-width:36px}.plot p{font-size:.9rem}.band{height:12px;background:#e8eef4;border-radius:8px;overflow:hidden;margin:6px 0}.band div{height:100%;background:var(--main)}summary{cursor:pointer;margin:8px 0}.trend{width:100%;height:auto;display:block}.trend text{fill:#18304b;font:13px system-ui}.trend .grid{stroke:#cbd8e3;stroke-width:1}.trend circle{stroke:white;stroke-width:1}.level-scroll{overflow:auto;margin:0 0 16px}.level-chart{display:grid;grid-template-columns:repeat(var(--level-count),minmax(75px,1fr));min-width:calc(var(--level-count)*80px);gap:5px;text-align:center}.level-chart .bars{height:175px}.overview-reading{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}.overview-reading h3{margin:0 0 12px}.overview-reading h4{margin:14px 0 4px}.overview-reading p{margin:4px 0 8px}.overview-reading article{border-top:1px solid var(--line);margin-top:14px;padding:4px 0 8px}.rubric-control{width:fit-content;max-width:100%;margin-bottom:10px}.rubric-priority{border-left:4px solid #c93238;padding:5px 10px;font-weight:600}.rubric-badge{display:inline-block;margin:0 0 0 9px;border:1px solid var(--rubric-color);border-left-width:5px;border-radius:6px;padding:2px 7px;font-size:.83rem}.rubric-track{display:flex;position:relative;height:9px;margin-top:12px;border-radius:5px}.rubric-track span:first-child{border-radius:5px 0 0 5px}.rubric-track span:nth-child(3){border-radius:0 5px 5px 0}.rubric-track i{position:absolute;top:-3px;height:15px;width:3px;transform:translateX(-50%);background:#18304b;box-shadow:0 0 0 1px white}.rubric-ticks{height:23px;position:relative;margin-top:4px;color:var(--muted)}.rubric-ticks small{position:absolute;transform:translateX(-50%)}.rubric-ticks small:first-child{transform:none}.rubric-ticks small:last-child{transform:translateX(-100%)}
 </style>
 <main>
 <header><small>ENCUESTA DEL ALUMNADO</small><h1>Tu opinión es importante</h1><p class="muted">Histórico de Microsoft Forms y análisis para la formación docente</p></header>
@@ -423,10 +423,35 @@ function sumDistributions(results) {
   }
   return {counts,skip};
 }
-function resultReading(series, question, categories, reference, referenceLabel, firstIsReference=false) {
-  const rating = categories.length > 0 && categories.every(answer=>ordinal.includes(answer));
-  const wording = norm(question);
-  const favorable = /claro y util|resolviendo dudas|resuelve dudas|planificacion de tareas|planifican las tareas|participacion oral|me ayudan|me resulta util|me he sentido atendid|son interesantes/.test(wording);
+const rubricBands = [
+  {limit:25,label:'Bueno',color:'#258348',rule:'Hasta 25 %',action:'Mantén esta práctica e identifica qué está funcionando.'},
+  {limit:40,label:'Mejorable',color:'#e7b800',rule:'Más de 25 % y hasta 40 %',action:'Revisa en qué cursos o materias se concentran las respuestas que se alejan del objetivo.'},
+  {limit:100,label:'Crítico',color:'#c93238',rule:'Más de 40 %',action:'Prioriza una actuación de mejora y comprueba su efecto en la siguiente encuesta.'}
+];
+const objectives = new Map();
+const objectiveKey = question => 'encuesta-baremo:'+location.pathname.replace(/(?:index\.html)?\/?$/,'/')+norm(question);
+function targetFor(question) {
+  const key=objectiveKey(question);
+  let saved=objectives.get(key);
+  if (!saved) {
+    try { saved=localStorage.getItem(key); } catch {}
+  }
+  if (['high','low','pending'].includes(saved)) return saved;
+  return /claro y util|resolviendo dudas|resuelve dudas|planificacion de tareas|planifican las tareas|participacion oral|me ayudan|me resulta util|me he sentido atendid|son interesantes/.test(norm(question))?'high':'pending';
+}
+function setTarget(question,target) {
+  const key=objectiveKey(question);
+  objectives.set(key,target);
+  try { localStorage.setItem(key,target); } catch {}
+}
+function rubricResult(outside,total) {
+  const band=rubricBands.findIndex(({limit})=>outside*100<=limit*total);
+  return {value:100*outside/total,band,provisional:total<10};
+}
+const hasRatingScale = categories => categories.length>0 && categories.every(answer=>ordinal.includes(answer));
+const scaleTitle = target => target==='low'?'Fuera del objetivo · Bastante + Mucho':'Fuera del objetivo · Nada / Nunca + Poco';
+function resultReading(series, question, categories, reference, referenceLabel, firstIsReference=false, target='pending') {
+  const rating = hasRatingScale(categories);
   const percent = (count,total)=>fmt.format(100*count/total)+' % ('+count+' de '+total+')';
   const referenceSize = validCount(reference);
   const highCount = result=>(result.counts.get('Bastante')||0)+(result.counts.get('Mucho')||0);
@@ -434,17 +459,19 @@ function resultReading(series, question, categories, reference, referenceLabel, 
     const size=validCount(result);
     if (!size) return {label,lines:['Sin respuestas válidas para esta selección.']};
     const lines=[];
+    let rubric;
     if (rating) {
       const high=highCount(result);
       const low=size-high;
-      if (favorable) {
-        lines.push((high>size/2?'Fortaleza observada. ':'Valoraciones altas. ')+percent(high,size)+' respondió «Bastante» o «Mucho».');
-        if (low) lines.push('Área de mejora. '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco». Conviene revisar qué dificultades pueden explicar estas respuestas.');
+      lines.push(percent(high,size)+' respondió «Bastante» o «Mucho» y '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco».');
+      if (target==='pending') {
+        lines.push('Pendiente de interpretar según la pauta del centro. Elige qué respuestas se ajustan al objetivo para aplicar el baremo.');
       } else {
-        lines.push(percent(high,size)+' respondió «Bastante» o «Mucho» y '+percent(low,size)+' eligió «Nada», «Nunca» o «Poco».');
-        lines.push(wording.includes('qustodio')
-          ? 'Aspecto a revisar. Comprueba si la frecuencia de uso coincide con las pautas del centro para este ámbito.'
-          : 'Aspecto a revisar. Contrasta esta distribución con el objetivo de la pregunta antes de interpretar un resultado alto o bajo como fortaleza o área de mejora.');
+        const outside=target==='low'?high:low;
+        rubric=rubricResult(outside,size);
+        const band=rubricBands[rubric.band];
+        lines.push(percent(outside,size)+' queda fuera del objetivo. Este porcentaje cae en el tramo '+band.label.toLowerCase()+' ('+band.rule.toLowerCase()+').');
+        if (!rubric.provisional) lines.push(band.action);
       }
       if ((!firstIsReference || index) && referenceSize) {
         const delta=100*(high/size-highCount(reference)/referenceSize);
@@ -454,18 +481,80 @@ function resultReading(series, question, categories, reference, referenceLabel, 
       const top=Math.max(...result.counts.values());
       const answers=[...result.counts].filter(([,count])=>count===top).map(([answer])=>'«'+answer+'»');
       lines.push((answers.length===1?'La opción más elegida fue ':'Las opciones más elegidas fueron ')+answers.join(', ')+' con '+percent(top,size)+(answers.length>1?' cada una.':'.'));
-      lines.push('La pregunta recoge una distribución de respuestas. Para identificar un área de mejora, compárala con el objetivo del centro para esta pregunta.');
+      lines.push('La escala de esta pregunta requiere su propio criterio de valoración.');
     }
-    if (size<10) lines.push('Hay pocas respuestas válidas. Interpreta el resultado con cautela.');
-    return {label,lines};
+    if (size<10) lines.push('Resultado orientativo. Hay menos de 10 respuestas válidas.');
+    return {label,lines,rubric};
   });
 }
-function renderReading(reading,title) {
+function renderReading(reading,title,question,target,rating) {
   const summary = node('div',undefined,'overview-reading');
   summary.append(node('h3',title));
-  for (const {label,lines} of reading) {
+  if (rating) {
+    const control=node('label','Objetivo para esta pregunta','rubric-control');
+    const select=node('select');
+    select.id='rubric-target';
+    select.append(
+      new Option('Por definir','pending'),
+      new Option('Se espera Bastante o Mucho','high'),
+      new Option('Se espera Nada, Nunca o Poco','low')
+    );
+    select.value=target;
+    select.onchange=async()=>{
+      setTarget(question,select.value);
+      await update('rubric');
+      $('rubric-target')?.focus();
+    };
+    control.append(select);
+    summary.append(control);
+    if (target!=='pending') {
+      summary.append(node('p',scaleTitle(target),'muted'));
+      const legend=node('div',undefined,'legend');
+      for (const band of rubricBands) {
+        const item=node('span');
+        const swatch=node('i',undefined,'swatch');
+        swatch.style.background=band.color;
+        item.append(swatch,band.label+' · '+band.rule);
+        legend.append(item);
+      }
+      summary.append(legend);
+      const priorities=reading.filter(({rubric})=>rubric && !rubric.provisional && rubric.band===2);
+      if (priorities.length) summary.append(node('p','Prioridad de actuación: '+priorities.map(item=>item.label).join(', ')+'.','rubric-priority'));
+    }
+  }
+  for (const {label,lines,rubric} of reading) {
     const item=node('article');
-    item.append(node('h4',label),...lines.map(line=>node('p',line)));
+    const heading=node('h4',label);
+    if (rubric) {
+      const band=rubricBands[rubric.band];
+      const badge=node('span',rubric.provisional?'Orientativo · '+band.label:band.label,'rubric-badge');
+      badge.style.setProperty('--rubric-color',band.color);
+      heading.append(badge);
+      item.append(heading);
+      const track=node('div',undefined,'rubric-track');
+      track.setAttribute('role','img');
+      track.setAttribute('aria-label',scaleTitle(target)+': '+fmt.format(rubric.value)+' %. '+badge.textContent+'.');
+      let previous=0;
+      for (const {limit,color} of rubricBands) {
+        const segment=node('span');
+        segment.style.width=(limit-previous)+'%';
+        segment.style.background=color;
+        track.append(segment);
+        previous=limit;
+      }
+      const marker=node('i');
+      marker.style.left='clamp(2px, '+rubric.value+'%, calc(100% - 2px))';
+      track.append(marker);
+      item.append(track);
+      const ticks=node('div',undefined,'rubric-ticks');
+      for (const value of [0,25,40,100]) {
+        const tick=node('small',value+' %');
+        tick.style.left=value+'%';
+        ticks.append(tick);
+      }
+      item.append(ticks);
+    } else item.append(heading);
+    item.append(...lines.map(line=>node('p',line)));
     summary.append(item);
   }
   return summary;
@@ -512,17 +601,20 @@ function display(series,field,teacherMode) {
   ].filter(Boolean);
   const note = pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '';
   const byLevel = !teacherMode && $('view').value==='level';
-  const readingTitle = isOverview ? 'Análisis del centro y las etapas' : 'Análisis por nivel';
+  const bySubject = !teacherMode && $('view').value==='subject';
+  const readingTitle = isOverview ? 'Análisis del centro y las etapas' : bySubject ? 'Análisis por materia' : 'Análisis por nivel';
+  const rating = hasRatingScale(categories);
+  const target = rating && (isOverview || byLevel || bySubject) ? targetFor(field.q) : 'pending';
   let reading = [];
   if (isOverview) {
     const stages = new Set(['Primaria','ESO','Bachillerato','Otras etapas']);
     const scopes = series.filter(([label],index)=>index===0 || stages.has(label));
-    reading = resultReading(scopes,field.q,categories,series[0][1],'del total del centro',true);
-  } else if (byLevel) {
+    reading = resultReading(scopes,field.q,categories,series[0][1],'del total del centro',true,target);
+  } else if (byLevel || bySubject) {
     const total = sumDistributions(series.map(([,result])=>result));
-    reading = resultReading(series,field.q,categories,total,'del resultado global de la selección');
+    reading = resultReading(series,field.q,categories,total,'del resultado global de la selección',false,target);
   }
-  report = {series,field,categories,context,teacherMode,isOverview,note,reading,readingTitle};
+  report = {series,field,categories,context,teacherMode,isOverview,note,reading,readingTitle,target};
   $('pdf').disabled = false;
   charts.append(node('p',context.join(' · '),'muted'));
   if (note) charts.append(node('p',note,'muted'));
@@ -592,7 +684,7 @@ function display(series,field,teacherMode) {
     plots.append(plot);
   }
   charts.append(plots);
-  if (reading.length) charts.append(renderReading(reading,readingTitle));
+  if (reading.length) charts.append(renderReading(reading,readingTitle,field.q,target,rating));
 }
 async function update(changed) {
   const version = ++renderCount;
@@ -715,7 +807,7 @@ refresh().catch(error=>status(error.message,true));
 function downloadReport() {
   if (!report) return;
   if(report.trend) return downloadTrend(report.trend);
-  const {series,field,categories,context,teacherMode,isOverview,note,reading=[],readingTitle} = report;
+  const {series,field,categories,context,teacherMode,isOverview,note,reading=[],readingTitle,target} = report;
   const doc = new window.jspdf.jsPDF();
   const margin = 16;
   let y = 18;
@@ -798,9 +890,28 @@ function downloadReport() {
     room(25);
     y+=5;
     write(readingTitle,13,true);
-    for (const {label,lines} of reading) {
-      room(18);
-      write(label,11,true);
+    if (reading.some(item=>item.rubric)) {
+      write(scaleTitle(target));
+      write(rubricBands.map(band=>band.label+' · '+band.rule).join(' | '),9);
+    }
+    for (const {label,lines,rubric} of reading) {
+      room(rubric?30:18);
+      const grade = rubric ? ' · '+(rubric.provisional?'Orientativo · ':'')+rubricBands[rubric.band].label : '';
+      if (rubric) doc.setTextColor(rubric.band===1?'#795b00':rubricBands[rubric.band].color);
+      write(label+grade,11,true);
+      doc.setTextColor('#000000');
+      if (rubric) {
+        let previous=0;
+        for (const {limit,color} of rubricBands) {
+          doc.setFillColor(color);
+          doc.rect(margin+previous*1.78,y,(limit-previous)*1.78,2.5,'F');
+          previous=limit;
+        }
+        doc.setDrawColor('#18304b');
+        const marker=margin+rubric.value*1.78;
+        doc.line(marker,y-1,marker,y+4);
+        y+=7;
+      }
       for (const line of lines) write(line);
     }
   }
