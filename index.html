@@ -412,27 +412,25 @@ function overview(data,fields) {
       .map(stage=>[stage,row=>educationStage(row[0])===stage]),
     ...courses.map(level=>[level,row=>row[0]===level])
   ];
-  return panels.map(([label,filter])=>{
-    const counts = new Map();
-    let skip = 0;
-    for (const field of fields) {
-      const result = distribution(data,field,filter);
-      skip += result.skip;
-      for (const [answer,count] of result.counts) counts.set(answer,(counts.get(answer)||0)+count);
-    }
-    return [label,{counts,skip}];
-  });
+  return panels.map(([label,filter])=>[label,sumDistributions(fields.map(field=>distribution(data,field,filter)))]);
 }
-function overviewReading(series, question, categories) {
+function sumDistributions(results) {
+  const counts = new Map();
+  let skip = 0;
+  for (const result of results) {
+    skip += result.skip;
+    for (const [answer,count] of result.counts) counts.set(answer,(counts.get(answer)||0)+count);
+  }
+  return {counts,skip};
+}
+function resultReading(series, question, categories, reference, referenceLabel, firstIsReference=false) {
   const rating = categories.length > 0 && categories.every(answer=>ordinal.includes(answer));
   const wording = norm(question);
   const favorable = /claro y util|resolviendo dudas|resuelve dudas|planificacion de tareas|planifican las tareas|participacion oral|me ayudan|me resulta util|me he sentido atendid|son interesantes/.test(wording);
   const percent = (count,total)=>fmt.format(100*count/total)+' % ('+count+' de '+total+')';
-  const center = series[0][1];
-  const centerSize = validCount(center);
+  const referenceSize = validCount(reference);
   const highCount = result=>(result.counts.get('Bastante')||0)+(result.counts.get('Mucho')||0);
-  const stages = new Set(['Primaria','ESO','Bachillerato','Otras etapas']);
-  return series.filter(([label],index)=>index===0 || stages.has(label)).map(([label,result],index)=>{
+  return series.map(([label,result],index)=>{
     const size=validCount(result);
     if (!size) return {label,lines:['Sin respuestas válidas para esta selección.']};
     const lines=[];
@@ -448,9 +446,9 @@ function overviewReading(series, question, categories) {
           ? 'Aspecto a revisar. Comprueba si la frecuencia de uso coincide con las pautas del centro para este ámbito.'
           : 'Aspecto a revisar. Contrasta esta distribución con el objetivo de la pregunta antes de interpretar un resultado alto o bajo como fortaleza o área de mejora.');
       }
-      if (index && centerSize) {
-        const delta=100*(high/size-highCount(center)/centerSize);
-        if (Math.abs(delta)>=0.1) lines.push('Las respuestas «Bastante» o «Mucho» están '+fmt.format(Math.abs(delta))+' puntos porcentuales '+(delta>0?'por encima':'por debajo')+' del total del centro.');
+      if ((!firstIsReference || index) && referenceSize) {
+        const delta=100*(high/size-highCount(reference)/referenceSize);
+        if (Math.abs(delta)>=0.1) lines.push('Las respuestas «Bastante» o «Mucho» están '+fmt.format(Math.abs(delta))+' puntos porcentuales '+(delta>0?'por encima':'por debajo')+' '+referenceLabel+'.');
       }
     } else {
       const top=Math.max(...result.counts.values());
@@ -462,9 +460,9 @@ function overviewReading(series, question, categories) {
     return {label,lines};
   });
 }
-function renderOverviewReading(reading) {
+function renderReading(reading,title) {
   const summary = node('div',undefined,'overview-reading');
-  summary.append(node('h3','Análisis del centro y las etapas'));
+  summary.append(node('h3',title));
   for (const {label,lines} of reading) {
     const item=node('article');
     item.append(node('h4',label),...lines.map(line=>node('p',line)));
@@ -513,8 +511,18 @@ function display(series,field,teacherMode) {
     $('group').parentElement.hidden ? '' : ($('group').value ? 'Grupo '+$('group').value : 'Todos los grupos')
   ].filter(Boolean);
   const note = pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '';
-  const reading = isOverview ? overviewReading(series,field.q,categories) : [];
-  report = {series,field,categories,context,teacherMode,isOverview,note,reading};
+  const byLevel = !teacherMode && $('view').value==='level';
+  const readingTitle = isOverview ? 'Análisis del centro y las etapas' : 'Análisis por nivel';
+  let reading = [];
+  if (isOverview) {
+    const stages = new Set(['Primaria','ESO','Bachillerato','Otras etapas']);
+    const scopes = series.filter(([label],index)=>index===0 || stages.has(label));
+    reading = resultReading(scopes,field.q,categories,series[0][1],'del total del centro',true);
+  } else if (byLevel) {
+    const total = sumDistributions(series.map(([,result])=>result));
+    reading = resultReading(series,field.q,categories,total,'del resultado global de la selección');
+  }
+  report = {series,field,categories,context,teacherMode,isOverview,note,reading,readingTitle};
   $('pdf').disabled = false;
   charts.append(node('p',context.join(' · '),'muted'));
   if (note) charts.append(node('p',note,'muted'));
@@ -584,7 +592,7 @@ function display(series,field,teacherMode) {
     plots.append(plot);
   }
   charts.append(plots);
-  if (reading.length) charts.append(renderOverviewReading(reading));
+  if (reading.length) charts.append(renderReading(reading,readingTitle));
 }
 async function update(changed) {
   const version = ++renderCount;
@@ -608,8 +616,9 @@ async function update(changed) {
       options('level',sorted(data.rows.map(row=>row[0])),'Todos');
       updateRosterPanel(data,id);
     }
-    if (changed==='edition'||changed==='level') {
-      options('group',sorted(data.rows.filter(row=>matches(row,$('level').value,ALL)).map(row=>row[1])),'Todos');
+    if (['edition','level','view'].includes(changed)) {
+      const allLevels = activeTab==='results' && ['level','overview','progress'].includes($('view').value);
+      options('group',sorted(data.rows.filter(row=>matches(row,allLevels?ALL:$('level').value,ALL)).map(row=>row[1])),'Todos');
     }
     const isOverview=activeTab==='results' && $('view').value==='overview';
     if (['edition','question','view'].includes(changed)) {
@@ -706,7 +715,7 @@ refresh().catch(error=>status(error.message,true));
 function downloadReport() {
   if (!report) return;
   if(report.trend) return downloadTrend(report.trend);
-  const {series,field,categories,context,teacherMode,isOverview,note,reading=[]} = report;
+  const {series,field,categories,context,teacherMode,isOverview,note,reading=[],readingTitle} = report;
   const doc = new window.jspdf.jsPDF();
   const margin = 16;
   let y = 18;
@@ -788,7 +797,7 @@ function downloadReport() {
   if (reading.length) {
     room(25);
     y+=5;
-    write('Análisis del centro y las etapas',13,true);
+    write(readingTitle,13,true);
     for (const {label,lines} of reading) {
       room(18);
       write(label,11,true);
