@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu opinión es importante</title>
+<style>
+:root{font:16px/1.45 system-ui,sans-serif;color:#18304b;background:#edf3f7;--paper:#fff;--line:#cfdae5;--muted:#4d6479;--main:#075c64}
+*{box-sizing:border-box}body{margin:0}main{max-width:1040px;margin:auto;padding:clamp(15px,4vw,42px)}header{margin-bottom:20px}h1{font-size:clamp(1.75rem,4vw,2.7rem);letter-spacing:-.045em;margin:3px 0}h2{margin:0 0 12px;font-size:1.35rem}p{margin:.4rem 0 .85rem}small,.muted{color:var(--muted)}nav,.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}nav{margin-bottom:16px}section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:clamp(14px,3vw,25px);margin-bottom:14px}
+input,select,button{font:inherit;padding:8px 10px;border:1px solid #aabbc9;border-radius:8px;background:white;color:#18304b;max-width:100%}button{cursor:pointer}button:disabled{opacity:.55;cursor:default}button.active,.action{background:var(--main);color:white;border-color:var(--main)}label{display:grid;gap:4px;font-size:.9rem;min-width:0}label.wide{flex:1;min-width:min(100%,240px)}label.wide select{width:100%}[hidden]{display:none!important}#status{color:var(--muted);margin-bottom:12px}#status.error{color:#9b271f}.mapping{max-height:390px;overflow:auto;margin:12px 0}.mapping label{margin:7px 0}.mapping input{width:100%}ul{padding-left:1.25rem}.legend{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.legend span{display:inline-flex;gap:5px;align-items:center}.swatch{width:12px;height:12px;border-radius:3px}.plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:17px}.plot{min-width:0}.bars{display:flex;align-items:end;justify-content:center;gap:4px;height:110px;margin:6px 0;border-bottom:1px solid #6e879a;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#dce6ed calc(25% - 1px),#dce6ed 25%)}.bar{flex:1;max-width:36px}.plot p{font-size:.9rem}.band{height:12px;background:#e8eef4;border-radius:8px;overflow:hidden;margin:6px 0}.band div{height:100%;background:var(--main)}summary{cursor:pointer;margin:8px 0}.trend{width:100%;height:auto;display:block}.trend text{fill:#18304b;font:13px system-ui}.trend .grid{stroke:#cbd8e3;stroke-width:1}.trend circle{stroke:white;stroke-width:1}.level-scroll{overflow:auto;margin:0 0 16px}.level-chart{display:grid;grid-template-columns:repeat(var(--level-count),minmax(75px,1fr));min-width:calc(var(--level-count)*80px);gap:5px;text-align:center}.level-chart .bars{height:175px}
+</style>
+<main>
+<header><small>ENCUESTA DEL ALUMNADO</small><h1>Tu opinión es importante</h1><p class="muted">Histórico de Microsoft Forms y análisis para la formación docente</p></header>
+<nav aria-label="Vistas"><button data-tab="import">Importar Excel</button><button data-tab="results">Resultados</button><button data-tab="teachers">Profesorado</button><a href="/descargar/encuesta-alumnado.zip" style="margin-left:auto;color:var(--main)">Descargar código ZIP</a></nav>
+<div id="status" role="status"></div>
+<section id="import">
+<h2>Importar desde Microsoft Forms</h2>
+<div class="row">
+<label>Año académico<input id="year" placeholder="2025–26" maxlength="9"></label>
+<label>Nombre de la edición (opcional)<input id="label" maxlength="80" placeholder="Encuesta anual"></label>
+<label class="wide">Excel de respuestas<input type="file" id="file" accept=".xlsx,.xlsm"></label>
+<button class="action" id="read">Revisar Excel</button>
+</div>
+<div id="review" hidden><h2>Revisar importación</h2><p id="classification"></p><p>Usa el mismo nombre de pregunta y materia si el enunciado y la escala son equivalentes. Para una pregunta nueva, escribe un nombre nuevo.</p><details id="mapping-details"><summary>Revisar correspondencia de columnas</summary><div class="mapping" id="mapping"></div></details><button class="action" id="save">Guardar en el histórico</button></div>
+<h2 style="margin-top:22px">Ediciones guardadas</h2><ul id="history"></ul>
+</section>
+<section id="analysis" hidden>
+<div class="row">
+<label class="wide">Edición<select id="edition"></select></label>
+<label class="wide">Pregunta<select id="question"></select></label>
+<label>Materia<select id="subject"></select></label>
+<label>Nivel<select id="level"></select></label>
+<label>Grupo<select id="group"></select></label>
+<label id="view-label">Comparar por<select id="view"><option value="level">Nivel</option><option value="group">Grupo</option><option value="subject">Materia</option><option value="year">Año académico</option><option value="progress">Evolución de todos los niveles</option></select></label>
+</div>
+<div id="teacher-info" hidden>
+<p class="muted">Sube un Excel con cuatro columnas, en este orden: materia, curso, letra y docente. Puedes repetir materia, curso y letra si hay varios docentes.</p>
+<div class="row"><label class="wide">Excel de profesorado<input id="roster-file" type="file" accept=".xlsx,.xlsm"></label><button id="roster-upload" class="action">Importar profesorado</button><button id="roster-reuse" hidden>Usar asignaciones de una edición anterior</button></div>
+<div id="roster-copy" class="row" hidden><label>Edición anterior<select id="roster-source"></select></label><button id="roster-confirm">Copiar asignaciones a esta edición</button></div>
+<p id="roster-info" class="muted"></p>
+<p class="muted">Si Forms identifica al docente en esa materia, se usa esa respuesta. Cuando hay varios docentes y Forms no distingue a cuál corresponde, el resultado queda en «Sin docente identificado».</p>
+</div>
+<label id="metric-label" hidden>Respuesta que se quiere seguir<select id="metric"></select></label>
+<div class="row" style="justify-content:flex-end;margin-top:12px"><button id="pdf" disabled>Descargar PDF</button></div>
+<div id="charts" aria-live="polite"></div>
+</section>
+</main>
+<script src="/xlsx.js"></script>
+<script src="/pdf.js"></script>
+<script>
+const schema = SCHEMA;
+CLIENT
+</script>
+</html>
