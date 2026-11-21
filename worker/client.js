@@ -7,7 +7,7 @@ const sorted = values => uniq(values).filter(Boolean).sort((a,b) => {
   const levelOrder = levels.indexOf(a) - levels.indexOf(b);
   return levelOrder || a.localeCompare(b,'es',{numeric:true});
 });
-const keyFor = field => JSON.stringify([norm(field.q),norm(field.m)]);
+const keyFor = field => JSON.stringify([norm(field.q),subjectKey(field.m)]);
 const sameQuestion = (a,b) => norm(a) === norm(b);
 const ALL = '';
 const fmt = new Intl.NumberFormat('es-ES',{maximumFractionDigits:1});
@@ -19,8 +19,7 @@ const answerColor = (answer,index) => responseColors[answer] || colors[index%col
 const subjectKey = value => {
   const subject=norm(value).replace(/[.]/g,'');
   if (['ingles','english'].includes(subject)) return 'english';
-  if (['spoken','sopken','spoken english','ingles oral'].includes(subject)) return 'spoken english';
-  if (['cambridge','cambridge english','ingles cambridge'].includes(subject)) return 'cambridge';
+  if (['spoken','sopken','spoken english','ingles oral','cambridge','cambridge english','ingles cambridge'].includes(subject)) return 'spoken english';
   return subject;
 };
 const levelKey = value => norm(value).replace(/(\d)\s*[.ºª°o]+/g,'$1').replace(/\bbach(?:illerato)?\b/g,'bac').replace(/\bprim\b/g,'primaria');
@@ -217,10 +216,15 @@ function distribution(data,field,filter) {
 function teacherFor(data,field,row) {
   const type = teacherType(field.m);
   const cambridge = data.fields.findIndex(item=>item.identity);
-  const direct = type==='english'?row[2]:type==='spoken'?row[3]:type==='cambridge' && cambridge>=0?row[cambridge+4]:'';
+  const spoken = row[3];
+  const alternative = cambridge>=0 ? row[cambridge+4] : '';
+  const validName = value => !!value && !/^(no |ningun|sin docente|no se|no aplica)/.test(norm(value));
+  const candidates = [spoken,alternative].filter(validName);
+  const direct = type==='english' ? row[2] : type==='spoken' && new Set(candidates.map(norm)).size===1 ? candidates[0] : '';
+  if (type==='spoken' && new Set(candidates.map(norm)).size>1) return '';
   const key=rosterKey(field.m,row[0],row[1]);
   const names=uniq(data.roster.filter(item=>rosterKey(...item.slice(0,3))===key).map(item=>item[3]));
-  if (direct && !/^(no |ningun|sin docente|no se|no aplica)/.test(norm(direct))) {
+  if (validName(direct)) {
     return names.find(name=>norm(name)===norm(direct)) || direct;
   }
   return names.length===1 ? names[0] : '';

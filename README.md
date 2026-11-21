@@ -17,3 +17,15 @@ presenten una identidad de Access válida para la aplicación.
 
 Este despliegue comienza con su propio histórico. La copia del repositorio
 contiene el código y no importa los datos almacenados en el sitio original.
+
+## GitHub Pages
+
+Abre la web del repositorio en GitHub Pages. Los Excel y las asignaciones se
+procesan y guardan en el navegador, sin enviarse a GitHub. Descarga una copia
+del histórico desde la aplicación para conservarla o restaurarla en otro
+navegador. Las ediciones de la web alojada anteriormente se pueden incorporar
+volviendo a importar sus Excel.
+
+Si editas la interfaz en `worker/page.html`, `worker/client.js` o
+`pages/storage.js`, ejecuta `python3 pages/build.py` y añade el
+`index.html` regenerado al commit.
