@@ -232,6 +232,34 @@ function teacherFor(data,field,row) {
 function getField(data,q,m) {
   return questionFields(data).find(field=>sameQuestion(field.q,q)&&subjectKey(field.m)===subjectKey(m));
 }
+const allSubjects = '*';
+function educationStage(level) {
+  const key = levelKey(level);
+  if (/\bprimaria\b/.test(key)) return 'Primaria';
+  if (/\b(eso|secundaria)\b/.test(key)) return 'ESO';
+  if (/\bbac\b/.test(key)) return 'Bachillerato';
+  return 'Otras etapas';
+}
+function overview(data,fields) {
+  const courses = sorted(data.rows.map(row=>row[0]));
+  const stages = ['Primaria','ESO','Bachillerato','Otras etapas'];
+  const panels = [
+    ['Todo el centro',()=>true],
+    ...stages.filter(stage=>courses.some(level=>educationStage(level)===stage))
+      .map(stage=>[stage,row=>educationStage(row[0])===stage]),
+    ...courses.map(level=>[level,row=>row[0]===level])
+  ];
+  return panels.map(([label,filter])=>{
+    const counts = new Map();
+    let skip = 0;
+    for (const field of fields) {
+      const result = distribution(data,field,filter);
+      skip += result.skip;
+      for (const [answer,count] of result.counts) counts.set(answer,(counts.get(answer)||0)+count);
+    }
+    return [label,{counts,skip}];
+  });
+}
 async function chartData(data,field) {
   const level = $('level').value, group = $('group').value, view = $('view').value;
   const filter = row=>matches(row,level,group);
@@ -242,6 +270,7 @@ async function chartData(data,field) {
     if (unknown.counts.size) series.push(['Sin docente identificado',unknown]);
     return series;
   }
+  if (view==='overview') return overview(data,$('subject').value===allSubjects ? relevantFields(data) : [field]);
   if (view==='year') {
     return Promise.all(catalog.map(async item=>{
       const other = await edition(item.id);
@@ -263,15 +292,19 @@ function display(series,field,teacherMode) {
   }
   const categories = uniq(series.flatMap(([,data])=>[...data.counts.keys()])).sort((a,b)=>
     (ordinal.indexOf(a)+1||99)-(ordinal.indexOf(b)+1||99)||a.localeCompare(b,'es'));
+  const isOverview = !teacherMode && $('view').value==='overview';
+  const pooled = isOverview && $('subject').value===allSubjects;
   const context = [
     $('edition').selectedOptions[0]?.textContent,
-    $('subject').parentElement.hidden ? '' : field.m,
+    pooled ? 'Todas las materias' : $('subject').parentElement.hidden ? '' : field.m,
     $('level').parentElement.hidden ? '' : ($('level').value || 'Todos los niveles'),
     $('group').parentElement.hidden ? '' : ($('group').value ? 'Grupo '+$('group').value : 'Todos los grupos')
   ].filter(Boolean);
-  report = {series,field,categories,context,teacherMode};
+  const note = pooled ? 'Se suman las respuestas válidas de cada materia. Un alumno puede aportar varias respuestas.' : '';
+  report = {series,field,categories,context,teacherMode,isOverview,note};
   $('pdf').disabled = false;
   charts.append(node('p',context.join(' · '),'muted'));
+  if (note) charts.append(node('p',note,'muted'));
   const legend = node('div',undefined,'legend');
   categories.forEach((label,i)=>{
     const item = node('span');
@@ -281,13 +314,13 @@ function display(series,field,teacherMode) {
     legend.append(item);
   });
   charts.append(node('p','Porcentaje de respuestas válidas (0–100 %).','muted'),legend);
-  const combined=!teacherMode && $('view').value==='level' && categories.length>0;
+  const combined=!teacherMode && (isOverview || $('view').value==='level') && categories.length>0;
   if (combined) {
     const container=node('div',undefined,'level-scroll');
     const graph=node('div',undefined,'level-chart');
     graph.style.setProperty('--level-count',series.length);
     graph.setAttribute('role','img');
-    graph.setAttribute('aria-label','Columnas agrupadas por nivel. Consulta los recuentos debajo.');
+    graph.setAttribute('aria-label',isOverview?'Columnas agrupadas por centro, etapas y cursos. Consulta los recuentos debajo.':'Columnas agrupadas por nivel. Consulta los recuentos debajo.');
     for (const [label,data] of series) {
       const cohort=node('div');
       const bars=node('div',undefined,'bars');
@@ -364,17 +397,21 @@ async function update(changed) {
     if (changed==='edition'||changed==='level') {
       options('group',sorted(data.rows.filter(row=>matches(row,$('level').value,ALL)).map(row=>row[1])),'Todos');
     }
-    if (changed==='edition'||changed==='question') {
+    const isOverview=activeTab==='results' && $('view').value==='overview';
+    if (['edition','question','view'].includes(changed)) {
       const fields = relevantFields(data);
-      options('subject',fields.map(field=>[field.m,field.m||'General']));
+      const choices = fields.map(field=>[field.m,field.m||'General']);
+      if (isOverview && fields.length>1) choices.unshift([allSubjects,'Todas las materias']);
+      options('subject',choices);
+      if (changed==='view' && isOverview && fields.length>1) $('subject').value=allSubjects;
     }
     $('subject').parentElement.hidden = activeTab==='results' && $('view').value==='subject';
     const progress=activeTab==='results' && $('view').value==='progress';
     $('metric-label').hidden=!progress;
-    $('level').parentElement.hidden = activeTab==='results' && (progress || $('view').value==='level');
-    $('group').parentElement.hidden = activeTab==='results' && $('view').value==='group';
+    $('level').parentElement.hidden = activeTab==='results' && (isOverview || progress || $('view').value==='level');
+    $('group').parentElement.hidden = activeTab==='results' && (isOverview || $('view').value==='group');
 
-    const field = getField(data,$('question').value,$('subject').value);
+    const field = isOverview && $('subject').value===allSubjects ? relevantFields(data)[0] : getField(data,$('question').value,$('subject').value);
     if (!field) {
       $('charts').replaceChildren(node('p','Esta edición no tiene preguntas vinculadas a una materia.'));
       return;
@@ -455,7 +492,7 @@ refresh().catch(error=>status(error.message,true));
 function downloadReport() {
   if (!report) return;
   if(report.trend) return downloadTrend(report.trend);
-  const {series,field,categories,context,teacherMode} = report;
+  const {series,field,categories,context,teacherMode,isOverview,note} = report;
   const doc = new window.jspdf.jsPDF();
   const margin = 16;
   let y = 18;
@@ -475,9 +512,32 @@ function downloadReport() {
   write(field.q,13,true);
   write(context.join(' · '));
   write('Porcentaje de respuestas válidas (0–100 %).');
+  if (note) write(note);
+  if (isOverview && categories.length) {
+    const width=178/series.length;
+    const barWidth=(width-2)/categories.length;
+    const baseline=y+39;
+    doc.setDrawColor(180,192,204);
+    for (const percent of [0,25,50,75,100]) {
+      const line=baseline-percent*.35;
+      doc.line(margin,line,194,line);
+    }
+    doc.setFontSize(7);
+    series.forEach(([name,result],index)=>{
+      const x=margin+index*width, n=validCount(result);
+      categories.forEach((answer,i)=>{
+        const height=n ? 35*(result.counts.get(answer)||0)/n : 0;
+        if (!height) return;
+        doc.setFillColor(answerColor(answer,i));
+        doc.rect(x+1+i*barWidth,baseline-height,barWidth*.9,height,'F');
+      });
+      doc.text(doc.splitTextToSize(name,width-1),x+width/2,baseline+4,{align:'center'});
+    });
+    y=baseline+15;
+  }
   for (const [name,{counts,skip,missing}] of series) {
     const n = [...counts.values()].reduce((sum,value)=>sum+value,0);
-    room(64);
+    room(isOverview?24:64);
     y+=4;
     write(name,12,true);
     if (!n) {
@@ -485,17 +545,19 @@ function downloadReport() {
       continue;
     }
     write(n+' válidas'+(skip?' · '+skip+' fuera del cálculo':''));
-    const width = Math.min(16,145/Math.max(categories.length,1));
-    const baseline = y+30;
-    doc.setDrawColor(180,192,204);
-    doc.line(margin,baseline,194,baseline);
-    categories.forEach((label,i)=>{
-      const height = 30*(counts.get(label)||0)/n;
-      if (!height) return;
-      doc.setFillColor(answerColor(label,i));
-      doc.rect(margin+2+i*(width+2),baseline-height,width,height,'F');
-    });
-    y=baseline+5;
+    if (!isOverview) {
+      const width = Math.min(16,145/Math.max(categories.length,1));
+      const baseline = y+30;
+      doc.setDrawColor(180,192,204);
+      doc.line(margin,baseline,194,baseline);
+      categories.forEach((label,i)=>{
+        const height = 30*(counts.get(label)||0)/n;
+        if (!height) return;
+        doc.setFillColor(answerColor(label,i));
+        doc.rect(margin+2+i*(width+2),baseline-height,width,height,'F');
+      });
+      y=baseline+5;
+    }
     categories.forEach((label,i)=>{
       const count=counts.get(label)||0;
       room(7);
