@@ -9,8 +9,10 @@ page = page.replace('SCHEMA', (here / 'schema.json').read_text().replace('<', '\
 page = page.replace('CLIENT', (here / 'client.js').read_text())
 dist = here.parent / 'dist'
 (dist / 'server').mkdir(parents=True, exist_ok=True)
-(dist / '.openai').mkdir(exist_ok=True)
-(dist / '.openai' / 'hosting.json').write_bytes((here.parent / '.openai' / 'hosting.json').read_bytes())
+manifest = here.parent / '.openai' / 'hosting.json'
+if manifest.is_file():
+    (dist / '.openai').mkdir(exist_ok=True)
+    (dist / '.openai' / 'hosting.json').write_bytes(manifest.read_bytes())
 source_zip = subprocess.check_output(
     ['git', 'archive', '--format=zip', '--prefix=encuesta-alumnado/', 'HEAD'],
     cwd=here.parent,
